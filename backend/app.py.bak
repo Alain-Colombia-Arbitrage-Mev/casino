@@ -1,0 +1,945 @@
+from flask import Flask, request, jsonify, make_response
+from flask_cors import CORS
+import os
+import re # Para extraer números de texto
+import requests # Para OpenRouter
+from roulette_analyzer import AnalizadorRuleta, RUEDA_EUROPEA # Importamos la clase
+from supabase import create_client, Client # Importamos supabase
+from dotenv import load_dotenv # Importar load_dotenv
+from google.cloud import speech # <--- AÑADIDO PARA GOOGLE STT
+from google.oauth2 import service_account # <--- Para cargar credenciales desde info
+import json # <--- Para parsear el JSON string
+import random # <--- AÑADIDO (aunque el random.choice se eliminó, lo mantengo por si acaso)
+from ml_predictor import MLPredictor # <--- NUEVO para ML
+import traceback # <--- AÑADIDO para manejar excepciones
+import numpy as np
+import datetime
+import uuid
+
+# Cargar variables de entorno desde .env si existe (para desarrollo local)
+load_dotenv()
+
+app = Flask(__name__)
+
+# Configuración de CORS mejorada
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:5173"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "expose_headers": ["Content-Type"],
+        "supports_credentials": True,
+        "send_wildcard": False
+    }
+})
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
+# Custom JSON encoder para manejar tipos de NumPy
+class NumpyJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif hasattr(obj, 'dtype') and np.issubdtype(obj.dtype, np.number):  # Para otros tipos numéricos de NumPy
+            return obj.item()  # Convertir a tipo Python nativo
+        return super(NumpyJSONEncoder, self).default(obj)
+
+app.json_encoder = NumpyJSONEncoder  # Usar el encoder personalizado
+
+# --- Configuración de Credenciales de Google Cloud ---
+gcp_credentials = None
+raw_google_creds_json_str = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+if raw_google_creds_json_str:
+    try:
+        credentials_info = json.loads(raw_google_creds_json_str)
+        gcp_credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        print("Credenciales de Google Cloud cargadas desde la variable de entorno GOOGLE_APPLICATION_CREDENTIALS_JSON.")
+    except Exception as e:
+        print(f"Error al cargar credenciales desde GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}. Intentando fallback.")
+        gcp_credentials = None # Asegurar que esté None si falla
+
+if not gcp_credentials: # Si no se cargaron desde la variable de entorno JSON
+    local_credentials_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") # Variable con PATH al archivo
+    if local_credentials_path and os.path.exists(local_credentials_path):
+        try:
+            gcp_credentials = service_account.Credentials.from_service_account_file(local_credentials_path)
+            print(f"Credenciales de Google Cloud cargadas desde archivo apuntado por GOOGLE_APPLICATION_CREDENTIALS: {local_credentials_path}")
+        except Exception as e:
+            print(f"Error al cargar credenciales desde GOOGLE_APPLICATION_CREDENTIALS ({local_credentials_path}): {e}")
+            gcp_credentials = None
+    else:
+        # Fallback a la ruta absoluta que tenías (solo para desarrollo local si lo anterior falla)
+        hardcoded_local_path = "E:\\aicasino2\\caloriasapp-253ec-bc2aa06fdb0b.json"
+        if os.path.exists(hardcoded_local_path):
+            try:
+                gcp_credentials = service_account.Credentials.from_service_account_file(hardcoded_local_path)
+                print(f"Credenciales de Google Cloud cargadas desde ruta local fija: {hardcoded_local_path}")
+            except Exception as e:
+                print(f"Error al cargar credenciales desde ruta local fija ({hardcoded_local_path}): {e}")
+                gcp_credentials = None
+        else:
+            print("ADVERTENCIA: Credenciales de Google Cloud no configuradas. STT no funcionará.")
+# --- Fin Configuración de Credenciales ---
+
+# Configuración de Supabase
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+# Inicializar cliente de Supabase de forma global
+supabase_client: Client | None = None
+TABLE_NAME = "roulette_history" # Nombre de tu tabla en Supabase
+ANALYZER_STATE_TABLE_NAME = "analyzer_state" # Nombre de la tabla de estado del analizador
+
+# Definir los nombres de las nuevas tablas de sectores ANTES de su uso
+SECTORES_DEFINICIONES_TABLE_NAME = "sectores_definiciones"
+SECTORES_CONTEOS_TABLE_NAME = "sectores_conteos"
+
+# Mapa global para ID de sector a nombre
+map_id_a_nombre_sector: dict = {} # <--- HACER GLOBAL
+
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print(f"Cliente de Supabase inicializado. Intentando interactuar con la tabla '{TABLE_NAME}'.")
+    except Exception as e:
+        print(f"Error al inicializar el cliente de Supabase: {e}")
+else:
+    print("Advertencia: Variables de entorno SUPABASE_URL y/o SUPABASE_KEY no encontradas. Supabase no se utilizará.")
+
+# Configuración de OpenRouter
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+OPENROUTER_MODEL_ID = "google/gemini-2.5-pro-preview" # Modelo especificado por el usuario
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+if not OPENROUTER_API_KEY:
+    print("Advertencia: OPENROUTER_API_KEY no encontrada. Las sugerencias de IA avanzada no estarán disponibles.")
+
+# Cargar estado del analizador y el historial ANTES de que se defina el analizador global
+# Esto es para que las definiciones de sectores, etc., estén disponibles cuando se cree la instancia.
+# La carga del historial de números vendrá después de que la instancia se cree con las definiciones correctas.
+# load_analyzer_state_from_supabase() # Se llamará después de inicializar supabase_client
+
+analizador = AnalizadorRuleta(historial_max_longitud=25) # Usamos el historial que definimos
+# Inicializamos el ML predictor
+ml_predictor = MLPredictor()
+
+# Variables globales necesarias para las funciones de carga
+map_id_a_nombre_sector = {}
+ANALYZER_STATE_TABLE_NAME = "analyzer_state"
+SECTORES_DEFINICIONES_TABLE_NAME = "sectores_definiciones"
+SECTORES_CONTEOS_TABLE_NAME = "sectores_conteos"
+
+# Cache para las sugerencias de OpenRouter para evitar llamadas repetidas
+openrouter_cache = {}
+openrouter_cache_max_size = 20  # Limitar el tamaño máximo del caché
+
+# Para incluir o no las sugerencias de IA externa en cada análisis (para evitar tiempos de espera)
+# True = incluir sugerencias, False = omitir sugerencias para respuesta más rápida
+INCLUIR_SUGERENCIAS_IA = False  # Configurado como False por defecto para respuestas rápidas
+
+# Definimos la variable global necesaria para guardar historial
+GUARDAR_HISTORIAL_SUPABASE = True
+
+# Nueva tabla para números individuales
+NUMEROS_INDIVIDUALES_TABLE_NAME = "roulette_numbers_individual"
+
+# Funciones de Ayuda para Supabase
+def load_history_from_supabase():
+    if not supabase_client:
+        print("Cliente de Supabase no disponible, no se cargará el historial.")
+        return
+    try:
+        print(f"Intentando cargar el último historial desde la tabla '{TABLE_NAME}'...")
+        response = (
+            supabase_client.table(TABLE_NAME)
+            .select("numbers_string")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if response.data:
+            ultimo_historial_str = response.data[0]['numbers_string']
+            # La cadena se guarda con el más reciente primero, que es lo que espera cargar_numeros_desde_string
+            analizador.cargar_numeros_desde_string(ultimo_historial_str, mas_reciente_primero=True)
+            print(f"Historial cargado desde Supabase: {len(analizador.historial_numeros)} números. Último: {analizador.obtener_ultimo_numero_analizado().numero if analizador.historial_numeros else 'N/A'}")
+        else:
+            print("No se encontró historial previo en Supabase.")
+    except Exception as e:
+        print(f"Error al cargar historial desde Supabase: {e}. Verifica que la tabla '{TABLE_NAME}' exista y tenga las columnas correctas (numbers_string, created_at).")
+
+# Nueva función para cargar el estado del analizador
+def load_analyzer_state_from_supabase():
+    if not supabase_client:
+        print("Cliente de Supabase no disponible, no se cargará el estado del analizador.")
+        return
+    try:
+        print(f"Intentando cargar el estado del analizador desde la tabla '{ANALYZER_STATE_TABLE_NAME}'...")
+        # Cargar estado principal del analizador (sin los conteos de sectores individuales)
+        response_estado = supabase_client.table(ANALYZER_STATE_TABLE_NAME).select(
+            "aciertos_individual, aciertos_grupo, aciertos_vecinos_0_10, aciertos_vecinos_7_27, "
+            "total_predicciones_evaluadas, aciertos_tia_lu, tia_lu_estado_activa, "
+            "tia_lu_estado_giros_jugados, tia_lu_estado_activada_con_33, "
+            "tia_lu_estado_contador_desencadenantes_consecutivos, tia_lu_estado_ultimo_numero_fue_desencadenante"
+        ).eq("id", 1).maybe_single().execute()
+
+        if response_estado.data:
+            data_estado = response_estado.data
+            print("Estado principal del analizador encontrado en Supabase, actualizando instancia local.")
+            analizador.aciertos_individual = data_estado.get('aciertos_individual', 0)
+            analizador.aciertos_grupo = data_estado.get('aciertos_grupo', 0)
+            analizador.aciertos_vecinos_0_10 = data_estado.get('aciertos_vecinos_0_10', 0)
+            analizador.aciertos_vecinos_7_27 = data_estado.get('aciertos_vecinos_7_27', 0)
+            analizador.total_predicciones_evaluadas = data_estado.get('total_predicciones_evaluadas', 0)
+            analizador.aciertos_tia_lu = data_estado.get('aciertos_tia_lu', 0)
+            
+            analizador.tia_lu_estado["activa"] = data_estado.get('tia_lu_estado_activa', False)
+            analizador.tia_lu_estado["giros_jugados"] = data_estado.get('tia_lu_estado_giros_jugados', 0)
+            analizador.tia_lu_estado["activada_con_33"] = data_estado.get('tia_lu_estado_activada_con_33', False)
+            analizador.tia_lu_estado["contador_desencadenantes_consecutivos"] = data_estado.get('tia_lu_estado_contador_desencadenantes_consecutivos', 0)
+            analizador.tia_lu_estado["ultimo_numero_fue_desencadenante"] = data_estado.get('tia_lu_estado_ultimo_numero_fue_desencadenante', False)
+        else:
+            print("No se encontró estado principal previo del analizador en Supabase. Se usarán los valores por defecto.")
+
+        # Cargar definiciones de sectores personalizados
+        print(f"Intentando cargar definiciones de sectores desde '{SECTORES_DEFINICIONES_TABLE_NAME}'...")
+        response_defs = supabase_client.table(SECTORES_DEFINICIONES_TABLE_NAME).select("id, nombre_sector, numeros").execute()
+        
+        definiciones_sectores = {}
+        global map_id_a_nombre_sector
+        map_id_a_nombre_sector.clear() # Limpiar por si se recarga
+
+        if response_defs.data:
+            for definicion in response_defs.data:
+                try:
+                    # Convertir la cadena de números "1,2,3" a un set de enteros
+                    set_numeros = set(map(int, definicion['numeros'].split(',')))
+                    definiciones_sectores[definicion['nombre_sector']] = set_numeros
+                    map_id_a_nombre_sector[definicion['id']] = definicion['nombre_sector']
+                except ValueError:
+                    print(f"Advertencia: Formato de números inválido para el sector '{definicion['nombre_sector']}' con id '{definicion['id']}'. Se omitirá.")
+            print(f"{len(definiciones_sectores)} definiciones de sectores cargadas.")
+        else:
+            print("No se encontraron definiciones de sectores en Supabase.")
+
+        # Cargar conteos de sectores personalizados
+        conteos_sectores = {nombre: 0 for nombre in definiciones_sectores} # Inicializar con 0
+        if definiciones_sectores: # Solo cargar conteos si hay definiciones
+            print(f"Intentando cargar conteos de sectores desde '{SECTORES_CONTEOS_TABLE_NAME}'...")
+            response_counts = supabase_client.table(SECTORES_CONTEOS_TABLE_NAME).select("id_sector_definicion, conteo").eq("id_estado_analizador", 1).execute()
+            
+            if response_counts.data:
+                for conteo_info in response_counts.data:
+                    id_sector = conteo_info['id_sector_definicion']
+                    nombre_sector = map_id_a_nombre_sector.get(id_sector)
+                    if nombre_sector:
+                        conteos_sectores[nombre_sector] = conteo_info['conteo']
+                    else:
+                        print(f"Advertencia: Conteo encontrado para id_sector_definicion '{id_sector}' desconocido. Se omitirá.")
+                print(f"Conteos para {len(response_counts.data)} sectores cargados.")
+            else:
+                print("No se encontraron conteos de sectores en Supabase (o tabla vacía).")
+        
+        analizador.cargar_estado_sectores_personalizados(definiciones_sectores, conteos_sectores)
+        print("Estado completo del analizador (incluyendo sectores) cargado/actualizado.")
+
+    except Exception as e:
+        print(f"Error EXCEPCIÓN al cargar el estado completo del analizador desde Supabase: {e}. Se usarán los valores por defecto.")
+
+# --- Carga inicial de datos ---
+if supabase_client: # Asegurarse que el cliente esté inicializado
+    load_analyzer_state_from_supabase() # Carga definiciones de sectores y contadores de aciertos
+    load_history_from_supabase() # Carga el historial de números
+
+# MODIFICADO: save_individual_numbers_to_supabase
+# Ahora acepta history_entry_id y guarda el mapeo correcto
+def save_individual_numbers_to_supabase(history_entry_id: int, numeros_str: str):
+    if not supabase_client:
+        print("Cliente de Supabase no disponible, no se guardarán los números individuales.")
+        return
+    
+    if not history_entry_id:
+        print("ID de entrada de historial no válido, no se guardarán números individuales.")
+        return
+        
+    try:
+        numeros_lista = []
+        if "," in numeros_str:
+            # Si hay comas, separar por comas
+            numeros_lista = [int(n.strip()) for n in numeros_str.split(",") if n.strip().isdigit()]
+        else:
+            # Si es un solo número
+            if numeros_str.strip().isdigit():
+                numeros_lista = [int(numeros_str.strip())]
+        
+        if not numeros_lista:
+            print(f"No se encontraron números válidos en la cadena: '{numeros_str}' para el historial ID: {history_entry_id}")
+            return
+
+        registros_a_insertar = []
+        for numero_val in numeros_lista:
+            # Asegurar que el número sea un entero nativo de Python
+            numero_limpio = int(numero_val.item() if hasattr(numero_val, 'item') else numero_val)
+
+            registros_a_insertar.append({
+                "history_entry_id": history_entry_id,
+                "number_value": numero_limpio
+            })
+        
+        if registros_a_insertar:
+            print(f"Intentando guardar {len(registros_a_insertar)} números individuales para el historial ID {history_entry_id} en '{NUMEROS_INDIVIDUALES_TABLE_NAME}'...")
+            response = supabase_client.table(NUMEROS_INDIVIDUALES_TABLE_NAME).insert(registros_a_insertar).execute()
+            
+            if hasattr(response, 'error') and response.error:
+                print(f"Error al guardar números individuales en Supabase para el historial ID {history_entry_id}: {response.error}")
+            elif response.data:
+                print(f"{len(response.data)} números individuales guardados exitosamente para el historial ID {history_entry_id}.")
+            else:
+                print(f"Respuesta no esperada al guardar números individuales para el historial ID {history_entry_id}: {response}")
+            
+    except Exception as e:
+        print(f"Error EXCEPCIÓN al guardar números individuales en Supabase para el historial ID {history_entry_id}: {e}, Tipo: {type(e)}.")
+        traceback.print_exc()
+
+def save_history_to_supabase(numeros_str: str):
+    if not supabase_client:
+        print("Cliente de Supabase no disponible, no se guardará el historial.")
+        return
+
+    inserted_history_id = None
+
+    try:
+        print(f"Intentando guardar historial en Supabase ('{TABLE_NAME}'): '{numeros_str}'...")
+        # Primero insertamos y obtenemos la respuesta
+        response = supabase_client.table(TABLE_NAME).insert({"numbers_string": numeros_str}).execute()
+        
+        if hasattr(response, 'error') and response.error:
+            print(f"Error devuelto por Supabase al guardar historial: {response.error}")
+        elif response.data and len(response.data) > 0:
+            # El ID estará en el primer elemento de data
+            inserted_history_id = response.data[0].get('id')
+            print(f"Historial guardado en Supabase. ID: {inserted_history_id}. Datos: {response.data}")
+            
+            if inserted_history_id:
+                save_individual_numbers_to_supabase(inserted_history_id, numeros_str)
+            else:
+                print(f"No se pudo obtener el ID del historial guardado. No se guardarán números individuales. Respuesta: {response.data}")
+        else:
+            print(f"Respuesta de Supabase al guardar historial no indicó éxito claro o no devolvió datos. Respuesta: {response}")
+
+    except Exception as e:
+        print(f"Error EXCEPCIÓN al guardar historial en Supabase: {e}, Tipo: {type(e)}.")
+        traceback.print_exc()
+
+# Nueva función para guardar el estado del analizador
+def save_analyzer_state_to_supabase():
+    """Guarda el estado del analizador en Supabase."""
+    if not supabase_client:
+        print("Cliente de Supabase no disponible, no se guardará el estado del analizador.")
+        return
+    try:
+        # Guardar estado principal del analizador
+        state_data_principal = {
+            "id": 1, 
+            "aciertos_individual": analizador.aciertos_individual,
+            "aciertos_grupo": analizador.aciertos_grupo,
+            "aciertos_vecinos_0_10": analizador.aciertos_vecinos_0_10,
+            "aciertos_vecinos_7_27": analizador.aciertos_vecinos_7_27,
+            "total_predicciones_evaluadas": analizador.total_predicciones_evaluadas,
+            "aciertos_tia_lu": analizador.aciertos_tia_lu,
+            "tia_lu_estado_activa": analizador.tia_lu_estado["activa"],
+            "tia_lu_estado_giros_jugados": analizador.tia_lu_estado["giros_jugados"],
+            "tia_lu_estado_activada_con_33": analizador.tia_lu_estado["activada_con_33"],
+            "tia_lu_estado_contador_desencadenantes_consecutivos": analizador.tia_lu_estado["contador_desencadenantes_consecutivos"],
+            "tia_lu_estado_ultimo_numero_fue_desencadenante": analizador.tia_lu_estado["ultimo_numero_fue_desencadenante"],
+            "updated_at": "now()"
+        }
+        
+        print(f"Intentando guardar/actualizar estado principal del analizador en Supabase ('{ANALYZER_STATE_TABLE_NAME}')...")
+        response_principal = supabase_client.table(ANALYZER_STATE_TABLE_NAME).upsert(state_data_principal).execute()
+        
+        if response_principal.data:
+            print("Estado principal del analizador guardado/actualizado exitosamente.")
+        else:
+            print("No se recibió confirmación del guardado del estado principal.")
+
+        # Guardar conteos de sectores personalizados
+        if analizador.conteo_sectores_personalizados:
+            datos_upsert_conteos = []
+            for nombre_sector, conteo in analizador.conteo_sectores_personalizados.items():
+                id_sector_definicion = None
+                try:
+                    response_sector = supabase_client.table(SECTORES_DEFINICIONES_TABLE_NAME).select("id").eq("nombre_sector", nombre_sector).single().execute()
+                    if response_sector.data:
+                        id_sector_definicion = response_sector.data.get("id")
+                except Exception as e:
+                    print(f"Error al buscar ID para el sector '{nombre_sector}': {e}")
+                    continue
+
+                if id_sector_definicion is not None:
+                    datos_upsert_conteos.append({
+                        "id_estado_analizador": 1,
+                        "id_sector_definicion": id_sector_definicion,
+                        "conteo": conteo,
+                        "updated_at": "now()"
+                    })
+        
+            if datos_upsert_conteos:
+                print(f"Intentando guardar/actualizar {len(datos_upsert_conteos)} conteos de sectores...")
+                try:
+                    response_conteos = supabase_client.table(SECTORES_CONTEOS_TABLE_NAME).upsert(
+                        datos_upsert_conteos,
+                        on_conflict="id_estado_analizador,id_sector_definicion"
+                    ).execute()
+
+                    if response_conteos.data:
+                        print(f"Conteos de sectores guardados/actualizados exitosamente.")
+                    else:
+                        print("No se recibió confirmación del guardado de conteos de sectores.")
+                except Exception as e:
+                    print(f"Error al guardar conteos de sectores: {e}")
+            else:
+                print("No hay conteos de sectores para guardar/actualizar.")
+
+    except Exception as e:
+        print(f"Error al guardar el estado del analizador en Supabase: {e}")
+        traceback.print_exc()
+
+# Cargar historial al iniciar la app
+load_history_from_supabase()
+
+# Cargar estado del analizador al iniciar la app
+load_analyzer_state_from_supabase()
+
+# Función para extraer número de texto
+def extract_number_from_text(text: str) -> str | None:
+    """Intenta extraer un número de una cadena de texto.
+       Ej: 'salió el 23' -> '23', 'es el 5' -> '5' """
+    if not text:
+        return None
+    
+    # Primero, verificar si el texto ya es solo un número
+    if text.strip().isdigit():
+        return text.strip()
+
+    # Buscar patrones como "el [número]", "es [número]", "[número]"
+    # Esta es una expresión regular simple, podría necesitar ajustes para más casos.
+    match = re.search(r'\b(\d{1,2})\b', text) # Busca números de 1 o 2 dígitos como palabras completas
+    if match:
+        return match.group(1)
+    return None
+
+# Función para OpenRouter
+def obtener_sugerencia_openrouter(historial_numeros: list) -> str | None:
+    if not OPENROUTER_API_KEY or not historial_numeros:
+        if not OPENROUTER_API_KEY: 
+            print("OpenRouter API Key no disponible.")
+            return "Sugerencias de IA no disponibles (API Key no configurada)."
+        if not historial_numeros: 
+            print("No hay historial para enviar a OpenRouter.")
+            return "No hay suficiente historial para generar sugerencias."
+        return None
+    
+    # Comprobar si historial_numeros es una lista de objetos NumeroRoleta o de enteros
+    historial_enteros = []
+    if historial_numeros and hasattr(historial_numeros[0], 'numero'):
+        historial_enteros = [n.numero for n in historial_numeros]
+    else:
+        historial_enteros = historial_numeros
+    
+    # Tomar los últimos N números para el prompt
+    numeros_recientes_str = ",".join([str(n) for n in reversed(historial_enteros)])
+    
+    # Verificar si tenemos esta secuencia en caché
+    if numeros_recientes_str in openrouter_cache:
+        print("Usando sugerencia en caché para la secuencia de números.")
+        return openrouter_cache[numeros_recientes_str]
+
+    prompt_text = (
+        f"Eres un experto analista de ruleta. Basándote en la siguiente secuencia de los últimos números de ruleta "
+        f"(el primer número es el más reciente): {numeros_recientes_str}\n\n"
+        f"Por favor, proporciona:\n"
+        f"1. Una predicción del número individual con la mayor probabilidad de salir próximamente.\n"
+        f"2. Un grupo de 20 números que consideres con alta probabilidad estadística (incluye siempre el número 1 en este grupo).\n"
+        f"3. Una justificación detallada para estas predicciones, basada en los patrones que observes en la secuencia proporcionada.\n"
+        f"4. Predicciones específicas para los vecinos del 0 y del 10 en la rueda física, y para el rango de números entre 7 y 27 (inclusivo).\n\n"
+        f"Formatea tu respuesta de manera clara y concisa, lista para ser mostrada a un usuario."
+    )
+    
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5001",
+        "X-Title": "Analizador de Ruleta"
+    }
+    payload = {
+        "model": OPENROUTER_MODEL_ID,
+        "messages": [
+            {"role": "user", "content": prompt_text}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 1000
+    }
+
+    print(f"Enviando solicitud a OpenRouter con el modelo: {OPENROUTER_MODEL_ID}")
+    try:
+        session = requests.Session()
+        response = session.post(
+            OPENROUTER_API_URL, 
+            headers=headers, 
+            json=payload, 
+            timeout=20,
+            verify=True
+        )
+        
+        if response.status_code != 200:
+            error_msg = f"Error en OpenRouter (Status {response.status_code}): {response.text}"
+            print(error_msg)
+            return f"Error al obtener sugerencias de IA: {error_msg}"
+        
+        data = response.json()
+        if data.get("choices") and len(data["choices"]) > 0:
+            sugerencia = data["choices"][0]["message"]["content"]
+            print("Sugerencia recibida de OpenRouter.")
+            
+            # Guardar en caché
+            openrouter_cache[numeros_recientes_str] = sugerencia.strip()
+            
+            # Limitar el tamaño del caché
+            if len(openrouter_cache) > openrouter_cache_max_size:
+                oldest_key = next(iter(openrouter_cache))
+                del openrouter_cache[oldest_key]
+                
+            return openrouter_cache[numeros_recientes_str]
+        else:
+            error_msg = f"Respuesta no esperada de OpenRouter: {data}"
+            print(error_msg)
+            return f"Error al procesar respuesta de IA: {error_msg}"
+            
+    except requests.exceptions.Timeout:
+        error_msg = "Tiempo de espera agotado al contactar el servicio de IA"
+        print(error_msg)
+        return error_msg
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Error de conexión con el servicio de IA: {str(e)}"
+        print(error_msg)
+        return error_msg
+    except Exception as e:
+        error_msg = f"Error inesperado al procesar sugerencias de IA: {str(e)}"
+        print(error_msg)
+        traceback.print_exc()
+        return error_msg
+
+def obtener_numeros_frecuentes(historial_numeros, cantidad):
+    """
+    Obtiene los números más frecuentes del historial.
+    Args:
+        historial_numeros: Lista de objetos NumeroRoleta o lista de enteros
+        cantidad: Cantidad de números más frecuentes a retornar
+    Returns:
+        dict: Diccionario con los números más frecuentes y sus frecuencias
+    """
+    # Convertir el historial a una lista de números enteros si son objetos NumeroRoleta
+    numeros = []
+    if historial_numeros and hasattr(historial_numeros[0], 'numero'):
+        numeros = [n.numero for n in historial_numeros]
+    else:
+        numeros = historial_numeros
+
+    # Contar frecuencias
+    frecuencias = {}
+    for num in numeros:
+        frecuencias[num] = frecuencias.get(num, 0) + 1
+    
+    # Ordenar por frecuencia (descendente) y luego por número (ascendente)
+    numeros_ordenados = sorted(frecuencias.items(), key=lambda x: (-x[1], x[0]))
+    
+    # Tomar los primeros 'cantidad' números
+    top_numeros = numeros_ordenados[:cantidad]
+    
+    return {
+        'numeros': [num for num, _ in top_numeros],
+        'frecuencias': [freq for _, freq in top_numeros]
+    }
+
+def convert_to_serializable(obj):
+    """Convierte objetos de NumPy y otros tipos no serializables a tipos Python nativos."""
+    if isinstance(obj, dict):
+        return {key: convert_to_serializable(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_serializable(item) for item in obj]
+    elif isinstance(obj, (np.integer, np.int32, np.int64)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float32, np.float64)):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif hasattr(obj, '__dict__'):
+        return convert_to_serializable(obj.__dict__)
+    return obj
+
+def guardar_prediccion(session_id, grupo_20, color_predicho):
+    """Guarda una nueva predicción en Supabase."""
+    try:
+        data = {
+            "grupo_20": grupo_20,
+            "color_predicho": color_predicho,
+            "session_id": session_id,
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        response = supabase_client.table("predicciones").insert(data).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error al guardar predicción: {e}")
+        return None
+
+def guardar_numero_jugado(session_id, numero, color):
+    """Guarda un nuevo número jugado en el historial."""
+    try:
+        data = {
+            "numero": numero,
+            "color": color,
+            "session_id": session_id,
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        response = supabase_client.table("historial_numeros").insert(data).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error al guardar número jugado: {e}")
+        return None
+
+def obtener_ultima_prediccion(session_id):
+    """Obtiene la última predicción para la sesión."""
+    try:
+        response = (supabase_client.table("predicciones")
+                   .select("*")
+                   .eq("session_id", session_id)
+                   .order("created_at", desc=True)
+                   .limit(1)
+                   .execute())
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error al obtener última predicción: {e}")
+        return None
+
+def guardar_resultado_apuesta(session_id, numero_jugado, color_jugado, prediccion_id, acierto_numero, acierto_color):
+    """Guarda el resultado de una apuesta."""
+    try:
+        data = {
+            "numero_jugado": numero_jugado,
+            "color_jugado": color_jugado,
+            "prediccion_id": prediccion_id,
+            "acierto_numero": acierto_numero,
+            "acierto_color": acierto_color,
+            "session_id": session_id,
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat()
+        }
+        response = supabase_client.table("resultados_apuestas").insert(data).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error al guardar resultado: {e}")
+        return None
+
+@app.route('/analizar', methods=['POST', 'OPTIONS'])
+def analizar_numeros():
+    if request.method == "OPTIONS":
+        return after_request(make_response())
+
+    try:
+        # Inicializar variables con valores por defecto
+        resultado = None
+        mensaje_resultado = "Procesando nueva jugada..."
+        prediccion_anterior = None
+        nueva_prediccion = None
+        historial_entry = None
+        session_id = request.headers.get('Authorization', str(uuid.uuid4()))
+
+    data = request.get_json()
+    if not data:
+            return jsonify({
+                "error": "No se recibieron datos JSON", 
+                "status": "error",
+                "session_id": session_id
+            }), 400
+
+        numeros_str = data.get('numeros', '')
+        if not numeros_str:
+            numeros_str = data.get('numeros_str', '')
+        if not numeros_str and 'nuevo_numero' in data:
+            numeros_str = str(data.get('nuevo_numero', ''))
+        
+        if not numeros_str.strip():
+            return jsonify({
+                "error": "No se proporcionaron números para analizar", 
+                "status": "error",
+                "session_id": session_id
+            }), 400
+
+        # Detección de apuesta individual
+        es_apuesta_individual = False
+        numero_apostado = None
+        if numeros_str.strip():
+            try:
+                partes = [p.strip() for p in numeros_str.split(',') if p.strip()]
+                if len(partes) == 1 and partes[0].isdigit():
+                    num_temp = int(partes[0])
+                    if 0 <= num_temp <= 36:
+                        numero_apostado = num_temp
+                        es_apuesta_individual = True
+                        print(f"Detectada apuesta individual para el número: {numero_apostado}")
+            else:
+                        print(f"Número individual {num_temp} fuera de rango.")
+            except ValueError as e:
+                print(f"Error al procesar número: {e}")
+
+        if data.get('resetear', False):
+            analizador.limpiar_historial()
+            print("Historial limpiado por solicitud del usuario.")
+        
+        print(f"Procesando números: {numeros_str}")
+        analizador.cargar_numeros_desde_string(numeros_str)
+        
+        if len(analizador.historial_numeros) == 0:
+            return jsonify({
+                "error": "No se pudieron procesar los números proporcionados.",
+                "status": "error",
+                "session_id": session_id
+            }), 400
+            
+        if len(analizador.historial_numeros) >= 20:
+            try:
+                ml_predictor.entrenar_todos(analizador.historial_numeros)
+                print("Modelos ML entrenados con éxito")
+            except Exception as e:
+                print(f"Error al entrenar modelos ML: {e}")
+        
+        informe = analizador.generar_informe_completo()
+        
+        try:
+            datos_graficos = obtener_datos_para_graficos()
+        except Exception as e:
+            print(f"Error al generar datos para gráficos: {e}")
+            datos_graficos = {"error": "No fue posible generar los datos para gráficos."}
+        
+        predicciones_ml = {}
+        if len(analizador.historial_numeros) >= 10:
+            try:
+                predicciones_ml = ml_predictor.predecir(analizador.historial_numeros)
+    except Exception as e:
+                print(f"Error al generar predicciones ML: {e}")
+        
+        # Generar grupos de predicción
+        grupo_20_prediccion = []
+        grupo_10_prediccion = []
+        grupo_8_prediccion = []
+
+        if analizador.historial_numeros:
+            datos_frec_20 = obtener_numeros_frecuentes(analizador.historial_numeros, 20)
+            grupo_20_prediccion = datos_frec_20['numeros']
+            print(f"Grupo de 20 (más frecuentes, {len(grupo_20_prediccion)} números): {grupo_20_prediccion}")
+
+            datos_frec_10 = obtener_numeros_frecuentes(analizador.historial_numeros, 10)
+            grupo_10_prediccion = datos_frec_10['numeros']
+            print(f"Grupo de 10 (más frecuentes, {len(grupo_10_prediccion)} números): {grupo_10_prediccion}")
+
+            datos_frec_8 = obtener_numeros_frecuentes(analizador.historial_numeros, 8)
+            grupo_8_prediccion = datos_frec_8['numeros']
+            print(f"Grupo de 8 (más frecuentes, {len(grupo_8_prediccion)} números): {grupo_8_prediccion}")
+
+        # Obtener predicción de color
+        prediccion_color = analizador.predecir_color()
+        color_predicho = prediccion_color.get("color", "Negro")
+        
+        try:
+            if supabase_client and GUARDAR_HISTORIAL_SUPABASE:
+                save_history_to_supabase(numeros_str) 
+                save_analyzer_state_to_supabase()
+        except Exception as e:
+            print(f"Error al guardar datos en Supabase: {e}")
+        
+        response_data = {
+            "status": "success",
+            "message": "Análisis completado correctamente",
+            "session_id": session_id,
+            "informe": informe,
+            "predicciones_ml": convert_to_serializable(predicciones_ml),
+            "datos_graficos": convert_to_serializable(datos_graficos),
+            "ultimo_numero": analizador.historial_numeros[0].numero if analizador.historial_numeros else None,
+            "grupos_prediccion": { 
+                "grupo_20": convert_to_serializable(grupo_20_prediccion),
+                "grupo_10": convert_to_serializable(grupo_10_prediccion),
+                "grupo_8": convert_to_serializable(grupo_8_prediccion),
+            },
+            "resultado_apuesta": convert_to_serializable(resultado) if resultado else None,
+            "mensaje_resultado": mensaje_resultado
+        }
+        
+        return jsonify(response_data), 200
+       
+    except Exception as e:
+        print(f"Error en /analizar: {e}")
+        traceback.print_exc()
+        return jsonify({
+            "error": str(e), 
+            "status": "error",
+            "session_id": session_id if 'session_id' in locals() else str(uuid.uuid4())
+        }), 500
+
+# Mejorar el encoder JSON para manejar tipos de NumPy
+class EnhancedJSONEncoder(NumpyJSONEncoder):
+    def default(self, obj):
+        try:
+            if hasattr(obj, 'dtype'):
+                if np.issubdtype(obj.dtype, np.floating):
+                    return float(obj)
+                elif np.issubdtype(obj.dtype, np.integer):
+                    return int(obj)
+            return super().default(obj)
+        except:
+            return str(obj)  # Fallback seguro
+
+# Actualizar el encoder de la aplicación
+app.json_encoder = EnhancedJSONEncoder
+
+def obtener_datos_vecinos(historial_numeros, numero_central, rango=3):
+    """
+    Obtiene estadísticas de los vecinos de un número en la ruleta.
+    Args:
+        historial_numeros: Lista de números jugados
+        numero_central: Número del cual queremos analizar los vecinos
+        rango: Cantidad de números a cada lado para considerar vecinos
+    Returns:
+        dict: Estadísticas de los vecinos
+    """
+    # Definir la secuencia de la ruleta europea
+    ruleta = RUEDA_EUROPEA
+    
+    # Encontrar la posición del número central
+    pos_central = ruleta.index(numero_central)
+    
+    # Obtener los vecinos (considerando la naturaleza circular de la ruleta)
+    vecinos = []
+    for i in range(-rango, rango + 1):
+        pos = (pos_central + i) % len(ruleta)
+        vecinos.append(ruleta[pos])
+    
+    # Contar apariciones de los vecinos en el historial
+    conteo = {num: 0 for num in vecinos}
+    for num in historial_numeros:
+        if isinstance(num, int) and num in conteo:
+            conteo[num] += 1
+    
+    # Preparar datos para el gráfico
+    return {
+        'labels': [str(num) for num in vecinos],
+        'data': [conteo[num] for num in vecinos]
+    }
+
+def obtener_datos_estrategia_tia_lu(historial_numeros):
+    """
+    Obtiene estadísticas de la estrategia Tía Lu
+    Returns:
+        dict: Estadísticas de la estrategia
+    """
+    # Números desencadenantes de la estrategia
+    numeros_desencadenantes = [33]
+    
+    # Contar apariciones y resultados
+    total_desencadenantes = 0
+    aciertos = 0
+    secuencias_activas = 0
+    
+    for i, num in enumerate(historial_numeros):
+        if num in numeros_desencadenantes:
+            total_desencadenantes += 1
+            # Verificar los siguientes números para ver si la estrategia hubiera funcionado
+            if i > 0:  # Asegurarse de que hay números siguientes para analizar
+                secuencias_activas += 1
+                # La estrategia busca que salga el mismo número en las siguientes jugadas
+                if num in historial_numeros[max(0, i-3):i]:
+                    aciertos += 1
+    
+    return {
+        'labels': ['Total Activaciones', 'Aciertos', 'Secuencias Activas'],
+        'data': [total_desencadenantes, aciertos, secuencias_activas]
+    }
+
+def obtener_datos_para_graficos():
+    """
+    Genera todos los datos necesarios para los gráficos del frontend.
+    Returns:
+        dict: Datos para todos los gráficos
+    """
+    numeros = [n.numero for n in analizador.historial_numeros]
+    
+    # Datos existentes
+    datos = analizador.obtener_datos_para_graficos()
+    
+    # Agregar nuevas estadísticas
+    datos['vecinos'] = {
+        'vecinos_5': obtener_datos_vecinos(numeros, 5),
+        'vecinos_7_27': obtener_datos_vecinos(numeros, 7, 2),  # Rango más pequeño para este grupo
+        'vecinos_31': obtener_datos_vecinos(numeros, 31),
+        'vecinos_34': obtener_datos_vecinos(numeros, 34),
+        'vecinos_0': obtener_datos_vecinos(numeros, 0),
+        'vecinos_2': obtener_datos_vecinos(numeros, 2)
+    }
+    
+    # Agregar estadísticas de la estrategia Tía Lu
+    datos['estrategia_tia_lu'] = obtener_datos_estrategia_tia_lu(numeros)
+    
+    return datos
+
+def setup_database_tables():
+    """Configura las tablas necesarias en Supabase si no existen."""
+    if not supabase_client:
+        print("Cliente de Supabase no disponible, no se pueden configurar las tablas.")
+        return
+
+    try:
+        # Crear tabla predicciones si no existe
+        supabase_client.table("predicciones").select("id").limit(1).execute()
+    except Exception as e:
+        if "relation" in str(e) and "does not exist" in str(e):
+            print("Creando tabla predicciones...")
+            supabase_client.postgrest.rpc('create_predicciones_table').execute()
+
+    try:
+        # Crear tabla historial_numeros si no existe
+        supabase_client.table("historial_numeros").select("id").limit(1).execute()
+    except Exception as e:
+        if "relation" in str(e) and "does not exist" in str(e):
+            print("Creando tabla historial_numeros...")
+            supabase_client.postgrest.rpc('create_historial_numeros_table').execute()
+
+    try:
+        # Crear tabla resultados_apuestas si no existe
+        supabase_client.table("resultados_apuestas").select("id").limit(1).execute()
+    except Exception as e:
+        if "relation" in str(e) and "does not exist" in str(e):
+            print("Creando tabla resultados_apuestas...")
+            supabase_client.postgrest.rpc('create_resultados_apuestas_table').execute()
+
+# Llamar a la función de configuración al inicio
+if supabase_client:
+    setup_database_tables()
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5001))
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=True,
+        use_reloader=True,
+        threaded=True
+    ) 

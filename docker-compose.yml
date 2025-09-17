@@ -1,0 +1,131 @@
+services:
+  # Redis Database - First to start
+  redis:
+    image: redis:7.2-alpine
+    container_name: aicasino-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - aicasino-network
+
+  # Go Backend Service - SEGUNDO: Procesa datos del scraper
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: aicasino-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - GIN_MODE=release
+      - PORT=8080
+      - SCRAPER_VALIDATION=true
+    depends_on:
+      redis:
+        condition: service_healthy
+      scraper:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aicasino-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Python Scraper Service - PRIMERO: Genera los datos
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    container_name: aicasino-scraper
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - SCRAPER_INTERVAL=10
+      - HEADLESS_MODE=true
+      - DATA_VALIDATION=true
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - /dev/shm:/dev/shm  # Shared memory for Chrome
+    networks:
+      - aicasino-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # Vue.js Frontend - TERCERO: Muestra datos en tiempo real
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: aicasino-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NUXT_HOST=0.0.0.0
+      - NUXT_PORT=3000
+      - API_BASE_URL=http://backend:8080
+      - NODE_ENV=production
+      - REAL_TIME_UPDATES=true
+    depends_on:
+      backend:
+        condition: service_healthy
+      scraper:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - aicasino-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  aicasino-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis_data:
+    driver: local

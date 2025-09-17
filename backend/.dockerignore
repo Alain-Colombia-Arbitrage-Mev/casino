@@ -1,0 +1,28 @@
+# Go specific
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Test files
+*_test.go
+test_*
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
