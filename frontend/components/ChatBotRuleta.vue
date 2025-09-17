@@ -917,7 +917,10 @@ onMounted(async () => {
     console.log('🔄 Cargando predicciones CSV iniciales...');
     await refreshCSVPredictions();
   }, 1000);
-  
+
+  // Limpiar mensajes excesivos al cargar
+  ensureMaxMessages();
+
   // Mensaje de bienvenida
   addMessageToChat({
     id: Date.now(),
@@ -1769,7 +1772,10 @@ const sendMessage = async () => {
           messageType: 'input',
           isWinning: recentNumbers.value.length > 1 ? winResult : undefined
         });
-        
+
+        // Asegurar que no se acumule el chat
+        ensureMaxMessages();
+
         // Actualizar todos los grupos
         await refreshAllGroups();
         await fetchLastNumbers();
@@ -2792,11 +2798,19 @@ const clearLastMessages = (count: number) => {
 // Función para añadir mensajes al chat manteniendo solo los últimos 5
 const addMessageToChat = (message: ChatMessage) => {
   // Añadir el nuevo mensaje
-  addMessageToChat(message);
+  chatMessages.value.push(message);
 
   // Mantener solo los últimos 5 mensajes
   if (chatMessages.value.length > 5) {
     chatMessages.value = chatMessages.value.slice(-5);
+  }
+};
+
+// Función para limpiar mensajes excesivos al cargar
+const ensureMaxMessages = () => {
+  if (chatMessages.value.length > 5) {
+    chatMessages.value = chatMessages.value.slice(-5);
+    console.log(`🧹 Chat limpiado - manteniendo últimos 5 mensajes`);
   }
 };
 
