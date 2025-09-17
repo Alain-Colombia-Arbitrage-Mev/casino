@@ -15,23 +15,38 @@
         class="mb-3 p-2 rounded-lg"
         :class="message.sender === 'user' ? 'bg-blue-100 ml-8' : 'bg-gray-100 mr-8'"
       >
-        <div v-if="message.sender === 'bot' && message.numbersGenerated" class="mb-2">
-          <div class="font-medium mb-1" v-once>Números generados:</div>
+        <!-- Números reales ingresados -->
+        <div v-if="message.sender === 'bot' && message.actualNumbers && message.actualNumbers.length" class="mb-2">
+          <div class="font-medium mb-1 text-green-700" v-once>📝 Números reales registrados:</div>
           <div class="flex flex-wrap gap-1 mb-2">
-            <span 
-              v-for="num in [...message.numbersGenerated].sort((a, b) => a - b)" 
-              :key="message.id + '-' + num"
-              class="inline-block w-7 h-7 rounded-full bg-gray-800 text-white flex items-center justify-center text-xs font-bold"
+            <span
+              v-for="num in [...message.actualNumbers].sort((a, b) => a - b)"
+              :key="message.id + '-actual-' + num"
+              class="inline-block w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-bold border-2 border-green-300"
+            >
+              {{ num }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Números de predicción generados -->
+        <div v-if="message.sender === 'bot' && message.numbersGenerated && message.numbersGenerated.length" class="mb-2">
+          <div class="font-medium mb-1 text-blue-700" v-once>🤖 Predicciones de IA:</div>
+          <div class="flex flex-wrap gap-1 mb-2">
+            <span
+              v-for="num in [...message.numbersGenerated].sort((a, b) => a - b)"
+              :key="message.id + '-pred-' + num"
+              class="inline-block w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold border-2 border-blue-300"
             >
               {{ num }}
             </span>
           </div>
           <div v-if="message.isWinning !== undefined" class="mt-1">
-            <span 
+            <span
               class="px-2 py-1 rounded text-xs font-bold"
               :class="message.isWinning ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
             >
-              {{ message.isWinning ? '¡Victoria!' : 'Derrota' }}
+              {{ message.isWinning ? '¡Predicción acertada!' : 'Predicción fallida' }}
             </span>
           </div>
         </div>
@@ -1000,7 +1015,8 @@ const startAutoRefresh = async () => {
             message: `🔥 ¡Nuevo número detectado automáticamente: ${latestNumber}!\n${resultMessage}`,
             timestamp: new Date().toISOString(),
             isWinning: currentResult.isWinning,
-            numbersGenerated: currentResult.predictedNumbers
+            messageType: 'prediction',
+          numbersGenerated: currentResult.predictedNumbers
           });
 
           // Actualizar datos y grupos
@@ -1015,7 +1031,8 @@ const startAutoRefresh = async () => {
               sender: 'bot',
               message: `Basado en el nuevo número, te recomiendo estos números para la próxima jugada:`,
               timestamp: new Date().toISOString(),
-              numbersGenerated: statNumbers
+              messageType: 'prediction',
+          numbersGenerated: statNumbers
             });
           }, 1000);
         }
@@ -1512,6 +1529,7 @@ const sendMessage = async () => {
           sender: 'bot',
           message: duplicateMessage,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: [numberToAdd],
           isWinning: currentResult.isWinning
         });
@@ -1590,6 +1608,7 @@ const sendMessage = async () => {
           sender: 'bot',
           message: resultMessage,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: [numberToAdd],
           isWinning: currentResult.isWinning
         });
@@ -1618,7 +1637,8 @@ const sendMessage = async () => {
               sender: 'bot',
               message: `Basado en estadísticas, te recomiendo estos números para la próxima jugada:`,
               timestamp: new Date().toISOString(),
-              numbersGenerated: statNumbers
+              messageType: 'prediction',
+          numbersGenerated: statNumbers
             });
           } catch (e) {
             console.error("Error generando predicciones estadísticas:", e);
@@ -1672,7 +1692,8 @@ const sendMessage = async () => {
           getLosingMessage(numberToCheck, result),
         timestamp: new Date().toISOString(),
         isWinning: result.isWinning,
-        numbersGenerated: result.predictedNumbers
+        messageType: 'prediction',
+          numbersGenerated: result.predictedNumbers
       });
       
       // Emitir evento de resultado de apuesta
@@ -1744,7 +1765,8 @@ const sendMessage = async () => {
           sender: 'bot',
           message: `He procesado ${processed.processedCount} números correctamente. El último número jugado registrado es ${lastNumber}.${winMessage}`,
           timestamp: new Date().toISOString(),
-          numbersGenerated: [lastNumber], // Mostrar solo el último número jugado para claridad
+          actualNumbers: [lastNumber], // Número real ingresado por el usuario
+          messageType: 'input',
           isWinning: recentNumbers.value.length > 1 ? winResult : undefined
         });
         
@@ -1767,7 +1789,8 @@ const sendMessage = async () => {
               sender: 'bot',
               message: `Basado en el análisis de los números ingresados, te recomiendo estos para la próxima jugada:`,
               timestamp: new Date().toISOString(),
-              numbersGenerated: activeGroup
+              messageType: 'prediction',
+          numbersGenerated: activeGroup
             });
             
             // También mostrar otra predicción con retraso
@@ -1778,7 +1801,8 @@ const sendMessage = async () => {
                 sender: 'bot',
                 message: `El método Puxa Ultra también recomienda:`,
                 timestamp: new Date().toISOString(),
-                numbersGenerated: puxa
+                messageType: 'prediction',
+          numbersGenerated: puxa
               });
             }, 800);
           } catch (e) {
@@ -1851,6 +1875,7 @@ const sendMessage = async () => {
           sender: 'bot',
           message: duplicateMessage,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: [number],
           isWinning: currentResult.isWinning
         });
@@ -1924,7 +1949,8 @@ const sendMessage = async () => {
             sender: 'bot',
             message: resultMessage,
             timestamp: new Date().toISOString(),
-            numbersGenerated: [number],
+            messageType: 'prediction',
+          numbersGenerated: [number],
             isWinning: recentNumbers.value.length > 1 ? winResult : undefined
           });
         }
@@ -1945,7 +1971,8 @@ const sendMessage = async () => {
               sender: 'bot',
               message: statMsg,
               timestamp: new Date().toISOString(),
-              numbersGenerated: statNumbers
+              messageType: 'prediction',
+          numbersGenerated: statNumbers
             });
           } catch (e) {
             console.error("Error generando predicciones estadísticas:", e);
@@ -1962,7 +1989,8 @@ const sendMessage = async () => {
                 sender: 'bot',
                 message: tiaLuMsg,
                 timestamp: new Date().toISOString(),
-                numbersGenerated: tiaLuNumbers
+                messageType: 'prediction',
+          numbersGenerated: tiaLuNumbers
               });
             }, 600);
           } catch (e) {
@@ -2070,7 +2098,8 @@ const processEnhancedPredictionResults = (predictionResults: any[], actualNumber
         sender: 'bot',
         message,
         timestamp: new Date().toISOString(),
-        numbersGenerated: [actualNumber],
+        messageType: 'prediction',
+          numbersGenerated: [actualNumber],
         isWinning: isWinning
       });
 
@@ -2319,7 +2348,8 @@ const generateRandomPrediction = () => {
     sender: 'bot',
     message: 'He generado estos números aleatorios para ti:',
     timestamp: new Date().toISOString(),
-    numbersGenerated: numbers
+    messageType: 'prediction',
+          numbersGenerated: numbers
   });
 };
 
@@ -2332,7 +2362,8 @@ const generateStatPrediction = async () => {
       sender: 'bot',
       message: 'Basado en las estadísticas recientes, estos son los números más probables:',
       timestamp: new Date().toISOString(),
-      numbersGenerated: numbers
+      messageType: 'prediction',
+          numbersGenerated: numbers
     });
   } catch (error) {
     console.error('Error generating prediction:', error);
@@ -2354,7 +2385,8 @@ const generateTiaLuPrediction = async () => {
       sender: 'bot',
       message: 'Según el método "Tía Lu", estos son los números recomendados:',
       timestamp: new Date().toISOString(),
-      numbersGenerated: numbers
+      messageType: 'prediction',
+          numbersGenerated: numbers
     });
   } catch (error) {
     console.error('Error generating prediction:', error);
@@ -2376,7 +2408,8 @@ const generatePuxaUltraPrediction = async () => {
       sender: 'bot',
       message: 'Aplicando el método "Puxa Ultra", estos son los números recomendados:',
       timestamp: new Date().toISOString(),
-      numbersGenerated: numbers
+      messageType: 'prediction',
+          numbersGenerated: numbers
     });
   } catch (error) {
     console.error('Error generating prediction:', error);
@@ -2505,7 +2538,8 @@ const checkLastNumberResult = () => {
     message: baseMessage + sectorRecommendationMsg,
     timestamp: new Date().toISOString(),
     isWinning: result.isWinning,
-    numbersGenerated: result.isWinning ? result.predictedNumbers : 
+    messageType: 'prediction',
+          numbersGenerated: result.isWinning ? result.predictedNumbers : 
                    recommendedSectorNumbers.length > 0 ? recommendedSectorNumbers : result.predictedNumbers
   });
   
@@ -2532,7 +2566,8 @@ const checkLastNumberResult = () => {
         sender: 'bot',
         message: `Nuevas predicciones para el próximo número:`,
         timestamp: new Date().toISOString(),
-        numbersGenerated: statNumbers
+        messageType: 'prediction',
+          numbersGenerated: statNumbers
       });
       
       // Método Tía Lu
@@ -2543,6 +2578,7 @@ const checkLastNumberResult = () => {
           sender: 'bot',
           message: `También podrías considerar estos números del método Tía Lu:`,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: tialuNumbers
         });
       }, 700);
@@ -2607,7 +2643,8 @@ const generateAutomaticPredictions = async (lastNumber: number) => {
       sender: 'bot',
       message: `Número ${lastNumber} registrado desde el historial. Generando predicciones...`,
       timestamp: new Date().toISOString(),
-      numbersGenerated: [lastNumber]
+      actualNumbers: [lastNumber], // Número real del historial
+      messageType: 'input'
     });
     
     // Esperar un momento antes de mostrar las predicciones
@@ -2620,6 +2657,7 @@ const generateAutomaticPredictions = async (lastNumber: number) => {
           sender: 'bot',
           message: `Predicciones estadísticas para el próximo número:`,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: statNumbers
         });
         
@@ -2631,7 +2669,8 @@ const generateAutomaticPredictions = async (lastNumber: number) => {
             sender: 'bot',
             message: `También puedes considerar estos números del método Tía Lu:`,
             timestamp: new Date().toISOString(),
-            numbersGenerated: tiaLuNumbers
+            messageType: 'prediction',
+          numbersGenerated: tiaLuNumbers
           });
         }, 600);
       } catch (e) {
@@ -2934,6 +2973,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
           sender: 'bot',
           message: `⚠️ Número ${number} (pos. ${originalPosition}): DUPLICADO - Ya existe en el historial, saltando...`,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: [number]
         });
         
@@ -2981,6 +3021,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
           sender: 'bot',
           message: resultMessage,
           timestamp: new Date().toISOString(),
+          messageType: 'prediction',
           numbersGenerated: [number],
           isWinning: currentResult.isWinning
         });
@@ -3051,7 +3092,8 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
             sender: 'bot',
             message: `Nuevas predicciones para el próximo número:`,
             timestamp: new Date().toISOString(),
-            numbersGenerated: statNumbers
+            messageType: 'prediction',
+          numbersGenerated: statNumbers
           });
         } catch (e) {
           console.error("Error generando predicciones finales:", e);
@@ -3212,7 +3254,8 @@ const handleRecognizedNumber = async (numberToAdd: number) => {
       sender: 'bot',
       message: resultMessage,
       timestamp: new Date().toISOString(),
-      numbersGenerated: [numberToAdd],
+      messageType: 'prediction',
+          numbersGenerated: [numberToAdd],
       isWinning: result.isWinning
     });
     

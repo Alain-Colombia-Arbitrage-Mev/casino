@@ -1,0 +1,32 @@
+{
+  "name": "lightning-roulette-autoclicker",
+  "version": "1.0.0",
+  "description": "Autoclicker específico para Lightning Roulette de Evolution Gaming",
+  "main": "detector_firefox_integrado.js",
+  "scripts": {
+    "detector-firefox": "node detector_firefox_integrado.js",
+    "cerrar-firefox": "node cerrar_firefox.js",
+    "verificar-firefox": "node verificar_firefox.js",
+    "clicker-adaptativo": "node clicker_adaptativo.js"
+  },
+  "keywords": [
+    "puppeteer",
+    "autoclicker",
+    "lightning-roulette",
+    "casino",
+    "automation"
+  ],
+  "author": "ClickerCasino",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.52.0",
+    "puppeteer": "^21.11.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-adblocker": "^2.13.6",
+    "puppeteer-extra-plugin-anonymize-ua": "^2.4.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

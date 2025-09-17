@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PORT=5003 go run main_optimized.go cache.go pool.go prediction.go adaptive_ml.go)",
+      "Bash(PORT=8080 go run main_optimized.go cache.go pool.go prediction.go adaptive_ml.go)",
+      "Bash(git add:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(go clean:*)",
+      "Bash(git submodule:*)",
+      "Bash(git rm:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(sed:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

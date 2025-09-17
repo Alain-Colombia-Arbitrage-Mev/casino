@@ -1,0 +1,14 @@
+.env
+caloriasapp-253ec-bc2aa06fdb0b.json
+node_modules
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.nuxt/
+.output/
+.data/
+.cache/
+dist/
+*.exe

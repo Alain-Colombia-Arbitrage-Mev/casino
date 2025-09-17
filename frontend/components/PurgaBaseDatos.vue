@@ -177,6 +177,63 @@
         </div>
       </div>
     </div>
+
+    <!-- Sección de reinicio completo -->
+    <div class="border-t pt-6 mt-6">
+      <h3 class="text-lg font-semibold mb-4 text-gray-700">Reinicio Completo de Estadísticas</h3>
+
+      <!-- Advertencia -->
+      <div class="bg-red-50 border border-red-300 p-4 rounded mb-4">
+        <div class="flex items-start">
+          <span class="text-red-600 text-xl mr-3">⚠️</span>
+          <div>
+            <p class="font-medium text-red-800 mb-2">¡ACCIÓN DESTRUCTIVA!</p>
+            <p class="text-sm text-red-700">
+              Esta acción eliminará TODAS las estadísticas, números históricos, predicciones y análisis.
+              También limpiará la cache de Redis y reiniciará todos los cálculos desde cero.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de lo que se eliminará -->
+      <div class="bg-orange-50 border border-orange-200 p-3 rounded mb-4">
+        <h4 class="font-medium text-orange-800 mb-2">Se eliminarán:</h4>
+        <ul class="text-sm text-orange-700 space-y-1 ml-4">
+          <li>• Todos los números de la base de datos</li>
+          <li>• Todo el historial de ruleta</li>
+          <li>• Cache de números en Redis</li>
+          <li>• Estadísticas de grupos y análisis</li>
+          <li>• Predicciones de IA almacenadas</li>
+          <li>• Análisis de estrategias (TIA LU, Ultra PUX)</li>
+        </ul>
+      </div>
+
+      <!-- Confirmación -->
+      <div class="mb-4">
+        <label class="flex items-center space-x-3">
+          <input
+            v-model="confirmacionReinicio"
+            type="checkbox"
+            class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+          />
+          <span class="text-sm font-medium text-gray-700">
+            Confirmo que entiendo que esta acción es irreversible y eliminará todas las estadísticas
+          </span>
+        </label>
+      </div>
+
+      <!-- Botón de reinicio -->
+      <button
+        @click="ejecutarReinicioCompleto"
+        class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded flex items-center font-semibold"
+        :disabled="ejecutandoReinicio || !confirmacionReinicio"
+      >
+        <span v-if="ejecutandoReinicio" class="animate-spin mr-2">⟳</span>
+        <span v-else class="mr-2">🔄</span>
+        {{ ejecutandoReinicio ? 'Reiniciando sistema...' : 'REINICIAR TODO EL SISTEMA' }}
+      </button>
+    </div>
     
     <!-- Resultados de la última purga -->
     <div v-if="ultimoResultadoPurga" class="mt-6 border-t pt-4">
@@ -253,6 +310,10 @@ const cargandoEstado = ref(false);
 const ejecutandoPurga = ref(false);
 const ultimoResultadoPurga = ref<any>(null);
 const mensaje = ref<{ tipo: string; texto: string } | null>(null);
+
+// Estado del reinicio completo
+const confirmacionReinicio = ref(false);
+const ejecutandoReinicio = ref(false);
 
 // Configuración de purga
 const configuracionPurga = ref({
@@ -356,12 +417,88 @@ const simularPurga = async () => {
 // Mostrar mensaje temporal
 const mostrarMensaje = (tipo: string, texto: string) => {
   mensaje.value = { tipo, texto };
-  
+
   // Limpiar mensaje después de cierto tiempo
   if (tipo === 'success' || tipo === 'info') {
     setTimeout(() => {
       mensaje.value = null;
     }, 5000);
+  }
+};
+
+// Ejecutar reinicio completo del sistema
+const ejecutarReinicioCompleto = async () => {
+  if (!confirmacionReinicio.value) {
+    mostrarMensaje('error', 'Debes confirmar que entiendes las consecuencias de esta acción');
+    return;
+  }
+
+  const confirmacion = confirm(
+    '¿ESTÁS ABSOLUTAMENTE SEGURO?\n\n' +
+    'Esta acción eliminará:\n' +
+    '• Todos los números de la base de datos\n' +
+    '• Todo el historial de ruleta\n' +
+    '• Cache de Redis\n' +
+    '• Todas las estadísticas y análisis\n' +
+    '• Predicciones de IA\n\n' +
+    'Esta acción es IRREVERSIBLE.\n\n' +
+    'Escribe "CONFIRMO" en el siguiente cuadro para continuar:'
+  );
+
+  if (!confirmacion) return;
+
+  const confirmacionTexto = prompt('Escribe "CONFIRMO" para proceder con el reinicio completo:');
+  if (confirmacionTexto !== 'CONFIRMO') {
+    mostrarMensaje('error', 'Reinicio cancelado. No se escribió la confirmación correcta.');
+    return;
+  }
+
+  ejecutandoReinicio.value = true;
+  mensaje.value = null;
+
+  try {
+    mostrarMensaje('info', 'Iniciando reinicio completo del sistema... Esto puede tomar varios minutos.');
+
+    // Llamar al endpoint de reinicio completo
+    const response = await fetch('/api/system/reset-complete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        confirmed: true,
+        timestamp: new Date().toISOString()
+      })
+    });
+
+    const resultado = await response.json();
+
+    if (resultado.success) {
+      mostrarMensaje('success',
+        `Sistema reiniciado completamente. Se eliminaron ${resultado.deleted_numbers || 0} números ` +
+        `y ${resultado.deleted_history || 0} registros de historial. Redis limpiado.`
+      );
+
+      // Resetear el checkbox
+      confirmacionReinicio.value = false;
+
+      // Actualizar estado después del reinicio
+      setTimeout(actualizarEstado, 2000);
+
+      // Recargar la página después de unos segundos para limpiar todo el estado
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+    } else {
+      mostrarMensaje('error', `Error en el reinicio: ${resultado.error || 'Error desconocido'}`);
+    }
+
+  } catch (error) {
+    console.error('Error al ejecutar reinicio completo:', error);
+    mostrarMensaje('error', 'Error al conectar con el servidor para el reinicio completo');
+  } finally {
+    ejecutandoReinicio.value = false;
   }
 };
 </script> 

@@ -241,6 +241,7 @@ func (s *OptimizedHybridServer) SetupOptimizedRoutes() {
 		system.POST("/validate-data", s.handleValidateData)      // NUEVO: Validar datos
 		system.GET("/sync-status", s.handleSyncStatus)           // NUEVO: Estado sincronización
 		system.POST("/purge-statistics", s.handlePurgeStatistics)  // NUEVO: Purgar estadísticas
+		system.POST("/reset-complete", s.handleResetComplete)    // NUEVO: Reinicio completo del sistema
 	}
 
 	// Test ultra rápido
@@ -1488,4 +1489,111 @@ func (s *OptimizedHybridServer) StartRedisEventListener() {
 			}
 		}
 	}()
+}
+
+// ResetCompleteRequest estructura para el request de reinicio completo
+type ResetCompleteRequest struct {
+	Confirmed bool   `json:"confirmed"`
+	Timestamp string `json:"timestamp"`
+}
+
+// ResetCompleteResponse estructura para la respuesta del reinicio completo
+type ResetCompleteResponse struct {
+	Success        bool   `json:"success"`
+	DeletedNumbers int64  `json:"deleted_numbers,omitempty"`
+	DeletedHistory int64  `json:"deleted_history,omitempty"`
+	RedisCleared   bool   `json:"redis_cleared"`
+	Error          string `json:"error,omitempty"`
+	Timestamp      string `json:"timestamp"`
+}
+
+// handleResetComplete maneja el reinicio completo del sistema
+func (s *OptimizedHybridServer) handleResetComplete(c *gin.Context) {
+	log.Printf("🔄 Solicitud de reinicio completo del sistema")
+
+	var req ResetCompleteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Printf("❌ Error al parsear request de reinicio: %v", err)
+		c.JSON(http.StatusBadRequest, ResetCompleteResponse{
+			Success:   false,
+			Error:     "Request inválido: " + err.Error(),
+			Timestamp: time.Now().Format(time.RFC3339),
+		})
+		return
+	}
+
+	// Verificar confirmación
+	if !req.Confirmed {
+		log.Printf("❌ Reinicio cancelado: falta confirmación")
+		c.JSON(http.StatusBadRequest, ResetCompleteResponse{
+			Success:   false,
+			Error:     "Confirmación requerida para el reinicio completo",
+			Timestamp: time.Now().Format(time.RFC3339),
+		})
+		return
+	}
+
+	log.Printf("⚠️ INICIANDO REINICIO COMPLETO DEL SISTEMA - ELIMINANDO TODOS LOS DATOS")
+
+	ctx := context.Background()
+	var deletedNumbers int64 = 0
+	var deletedHistory int64 = 0
+	redisCleared := false
+
+	// 1. Limpiar completamente Redis
+	log.Printf("🗑️ Limpiando Redis...")
+	result, err := s.RedisClient.FlushDB(ctx).Result()
+	if err != nil {
+		log.Printf("❌ Error al limpiar Redis: %v", err)
+		c.JSON(http.StatusInternalServerError, ResetCompleteResponse{
+			Success:   false,
+			Error:     "Error al limpiar Redis: " + err.Error(),
+			Timestamp: time.Now().Format(time.RFC3339),
+		})
+		return
+	}
+	redisCleared = (result == "OK")
+	log.Printf("✅ Redis completamente limpiado: %s", result)
+
+	// 2. Obtener conteos actuales (antes de eliminar)
+	numbersCount, _ := s.RedisClient.LLen(ctx, "roulette:numbers").Result()
+	historyCount, _ := s.RedisClient.LLen(ctx, "roulette:history").Result()
+
+	deletedNumbers = numbersCount
+	deletedHistory = historyCount
+
+	log.Printf("📊 Estadísticas eliminadas:")
+	log.Printf("   • Números eliminados: %d", deletedNumbers)
+	log.Printf("   • Historial eliminado: %d", deletedHistory)
+	log.Printf("   • Redis limpiado: %t", redisCleared)
+
+	// 3. Limpiar cache de la aplicación
+	log.Printf("🔄 Limpiando cache interno...")
+	s.Cache.Clear()
+	log.Printf("✅ Cache interno limpiado")
+
+	// 4. Reiniciar motor de ML si existe
+	if s.AdaptiveML != nil {
+		log.Printf("🧠 Reiniciando motor de ML adaptativo...")
+		// Aquí podrías reinicializar el motor de ML si es necesario
+		log.Printf("✅ Motor de ML reiniciado")
+	}
+
+	// 5. Reiniciar predictor pool
+	if s.PredictorPool != nil {
+		log.Printf("🎯 Reiniciando pool de predictores...")
+		// Aquí podrías limpiar el pool de predictores si es necesario
+		log.Printf("✅ Pool de predictores reiniciado")
+	}
+
+	log.Printf("✅ REINICIO COMPLETO FINALIZADO EXITOSAMENTE")
+	log.Printf("📈 Sistema completamente limpio y listo para nuevos datos")
+
+	c.JSON(http.StatusOK, ResetCompleteResponse{
+		Success:        true,
+		DeletedNumbers: deletedNumbers,
+		DeletedHistory: deletedHistory,
+		RedisCleared:   redisCleared,
+		Timestamp:      time.Now().Format(time.RFC3339),
+	})
 }

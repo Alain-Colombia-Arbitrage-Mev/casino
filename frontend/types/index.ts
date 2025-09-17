@@ -20,10 +20,12 @@ export interface ChatMessage {
   sender: 'user' | 'bot';
   timestamp: string;
   isWinning?: boolean;
-  numbersGenerated?: number[];
+  numbersGenerated?: number[]; // Números de predicción generados por IA
+  actualNumbers?: number[];    // Números reales ingresados por el usuario
   isDuplicate?: boolean;
   duplicateNumber?: number;
   allowOverride?: boolean;
+  messageType?: 'prediction' | 'input' | 'system' | 'general';
 }
 
 // Tipos para las estadísticas

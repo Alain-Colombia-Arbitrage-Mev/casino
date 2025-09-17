@@ -1,0 +1,25 @@
+{
+  "name": "aicasino-system",
+  "version": "2.0.0",
+  "description": "Sistema Automático de Ruleta con IA y Redis",
+  "main": "backend/app.py",
+  "scripts": {
+    "start": "concurrently \"npm run redis\" \"npm run backend\" \"npm run frontend\"",
+    "start:full": "concurrently --kill-others-on-fail \"npm run redis\" \"npm run backend\" \"npm run frontend\" \"npm run open\"",
+    "redis": "redis-server",
+    "backend": "cd backend && python app.py",
+    "frontend": "cd frontend && npm run dev",
+    "open": "wait-on http://localhost:3002 && open-cli http://localhost:3002",
+    "install:all": "npm install && cd backend && pip install -r requirements.txt && cd ../frontend && npm install",
+    "setup": "npm run install:all",
+    "dev": "npm run start:full",
+    "stop": "pkill -f redis-server; pkill -f 'python.*app.py'; pkill -f 'npm run dev'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.0.1",
+    "open-cli": "^7.2.0"
+  },
+  "author": "AI Casino System",
+  "license": "MIT"
+}
