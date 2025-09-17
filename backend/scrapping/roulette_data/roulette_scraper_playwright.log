@@ -1,0 +1,153 @@
+[2025-06-17 13:32:30] [INFO] 🎯 Starting Playwright Roulette Scraper
+[2025-06-17 13:32:30] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:32:31] [INFO] ✅ Playwright browser initialized
+[2025-06-17 13:32:31] [INFO] 🔐 Logging in...
+[2025-06-17 13:32:46] [INFO] 🔒 Browser closed
+[2025-06-17 13:34:42] [INFO] 🎯 Starting Enhanced Playwright Roulette Scraper with Supabase Integration
+[2025-06-17 13:34:42] [INFO] Loaded 37 previously processed numbers
+[2025-06-17 13:34:42] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:34:43] [INFO] ✅ Playwright browser initialized successfully
+[2025-06-17 13:34:43] [INFO] 🔐 Logging in...
+[2025-06-17 13:34:54] [INFO] ❌ Error during login: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"email\"]") to be visible
+
+[2025-06-17 13:34:54] [INFO] ❌ Fatal error: Page.wait_for_selector: Timeout 10000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"email\"]") to be visible
+
+[2025-06-17 13:34:55] [INFO] 🔒 Browser closed successfully
+[2025-06-17 13:34:55] [INFO] 🏁 Scraper shutdown complete
+[2025-06-17 13:38:00] [INFO] 🎯 Starting Enhanced Playwright Roulette Scraper with Advanced Error Handling
+[2025-06-17 13:38:00] [INFO] 🐛 Debug mode: DISABLED
+[2025-06-17 13:38:00] [INFO] Loaded 37 previously processed numbers
+[2025-06-17 13:38:00] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:38:01] [INFO] ✅ Playwright browser initialized successfully (headless: True)
+[2025-06-17 13:38:01] [INFO] 🔐 Starting login process...
+[2025-06-17 13:38:01] [INFO] 🌐 Navigating to: https://www.iamonstro.com.br/sistema/index.php
+[2025-06-17 13:38:06] [INFO] 🔍 Trying email selector: input[name="email"]
+[2025-06-17 13:38:11] [INFO] ⚠️ Selector input[name="email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"email\"]") to be visible
+
+[2025-06-17 13:38:11] [INFO] 🔍 Trying email selector: input[type="email"]
+[2025-06-17 13:38:16] [INFO] ⚠️ Selector input[type="email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[type=\"email\"]") to be visible
+
+[2025-06-17 13:38:16] [INFO] 🔍 Trying email selector: #email
+[2025-06-17 13:38:21] [INFO] ⚠️ Selector #email failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("#email") to be visible
+
+[2025-06-17 13:38:21] [INFO] 🔍 Trying email selector: .email
+[2025-06-17 13:38:26] [INFO] ⚠️ Selector .email failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator(".email") to be visible
+
+[2025-06-17 13:38:26] [INFO] 🔍 Trying email selector: input[placeholder*="email"]
+[2025-06-17 13:38:31] [INFO] ⚠️ Selector input[placeholder*="email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"email\"]") to be visible
+
+[2025-06-17 13:38:31] [INFO] 🔍 Trying email selector: input[placeholder*="Email"]
+[2025-06-17 13:38:36] [INFO] ⚠️ Selector input[placeholder*="Email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"Email\"]") to be visible
+
+[2025-06-17 13:38:36] [INFO] 🔍 Trying email selector: input[placeholder*="correo"]
+[2025-06-17 13:38:41] [INFO] ⚠️ Selector input[placeholder*="correo"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"correo\"]") to be visible
+
+[2025-06-17 13:38:41] [INFO] 🔍 Trying email selector: input[placeholder*="usuario"]
+[2025-06-17 13:38:46] [INFO] ⚠️ Selector input[placeholder*="usuario"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"usuario\"]") to be visible
+
+[2025-06-17 13:38:46] [INFO] ❌ Error during login: No se pudo encontrar el campo de email con ningún selector
+[2025-06-17 13:38:46] [INFO] ❌ Fatal error: No se pudo encontrar el campo de email con ningún selector
+[2025-06-17 13:38:46] [INFO] 🔒 Browser closed successfully
+[2025-06-17 13:38:46] [INFO] 🏁 Scraper shutdown complete
+[2025-06-17 13:38:54] [INFO] 🎯 Starting Enhanced Playwright Roulette Scraper with Advanced Error Handling
+[2025-06-17 13:38:54] [INFO] 🐛 Debug mode: DISABLED
+[2025-06-17 13:38:54] [INFO] Loaded 37 previously processed numbers
+[2025-06-17 13:38:54] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:38:55] [INFO] ✅ Playwright browser initialized successfully (headless: True)
+[2025-06-17 13:38:55] [INFO] 🔐 Starting login process...
+[2025-06-17 13:38:55] [INFO] 🌐 Navigating to: https://www.iamonstro.com.br/sistema/index.php
+[2025-06-17 13:38:59] [INFO] 🔍 Trying email selector: input[name="email"]
+[2025-06-17 13:39:04] [INFO] ⚠️ Selector input[name="email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[name=\"email\"]") to be visible
+
+[2025-06-17 13:39:04] [INFO] 🔍 Trying email selector: input[type="email"]
+[2025-06-17 13:39:09] [INFO] ⚠️ Selector input[type="email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[type=\"email\"]") to be visible
+
+[2025-06-17 13:39:09] [INFO] 🔍 Trying email selector: #email
+[2025-06-17 13:39:14] [INFO] ⚠️ Selector #email failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("#email") to be visible
+
+[2025-06-17 13:39:14] [INFO] 🔍 Trying email selector: .email
+[2025-06-17 13:39:19] [INFO] ⚠️ Selector .email failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator(".email") to be visible
+
+[2025-06-17 13:39:19] [INFO] 🔍 Trying email selector: input[placeholder*="email"]
+[2025-06-17 13:39:24] [INFO] ⚠️ Selector input[placeholder*="email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"email\"]") to be visible
+
+[2025-06-17 13:39:24] [INFO] 🔍 Trying email selector: input[placeholder*="Email"]
+[2025-06-17 13:39:29] [INFO] ⚠️ Selector input[placeholder*="Email"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"Email\"]") to be visible
+
+[2025-06-17 13:39:29] [INFO] 🔍 Trying email selector: input[placeholder*="correo"]
+[2025-06-17 13:39:34] [INFO] ⚠️ Selector input[placeholder*="correo"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"correo\"]") to be visible
+
+[2025-06-17 13:39:34] [INFO] 🔍 Trying email selector: input[placeholder*="usuario"]
+[2025-06-17 13:39:40] [INFO] ⚠️ Selector input[placeholder*="usuario"] failed: Page.wait_for_selector: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator("input[placeholder*=\"usuario\"]") to be visible
+
+[2025-06-17 13:39:40] [INFO] ❌ Error during login: No se pudo encontrar el campo de email con ningún selector
+[2025-06-17 13:39:40] [INFO] ❌ Fatal error: No se pudo encontrar el campo de email con ningún selector
+[2025-06-17 13:39:40] [INFO] 🔒 Browser closed successfully
+[2025-06-17 13:39:40] [INFO] 🏁 Scraper shutdown complete
+[2025-06-17 13:40:26] [INFO] 🎯 Starting Enhanced Playwright Roulette Scraper with Advanced Error Handling
+[2025-06-17 13:40:26] [INFO] 🐛 Debug mode: ENABLED
+[2025-06-17 13:40:26] [INFO] 🔐 LOGIN_URL: https://www.iamonstro.com.br/sistema/index.php
+[2025-06-17 13:40:26] [INFO] 🔐 DASHBOARD_URL: https://www.iamonstro.com.br/sistema/dashboard.php?mesa=Lightning%20Roulette
+[2025-06-17 13:40:26] [INFO] 🔐 USERNAME: gua***
+[2025-06-17 13:40:26] [INFO] 🔐 PASSWORD: SET
+[2025-06-17 13:40:26] [INFO] Loaded 37 previously processed numbers
+[2025-06-17 13:40:26] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:42:10] [INFO] 🎯 Starting Enhanced Playwright Roulette Scraper with Advanced Error Handling
+[2025-06-17 13:42:10] [INFO] 🐛 Debug mode: ENABLED
+[2025-06-17 13:42:10] [INFO] 🔐 LOGIN_URL: https://www.iamonstro.com.br/sistema/index.php
+[2025-06-17 13:42:10] [INFO] 🔐 DASHBOARD_URL: https://www.iamonstro.com.br/sistema/dashboard.php?mesa=Lightning%20Roulette
+[2025-06-17 13:42:10] [INFO] 🔐 USERNAME: gua***
+[2025-06-17 13:42:10] [INFO] 🔐 PASSWORD: SET
+[2025-06-17 13:42:10] [INFO] Loaded 37 previously processed numbers
+[2025-06-17 13:42:10] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:42:45] [INFO] ❌ Fatal error: BrowserContext.new_page: Target page, context or browser has been closed
+[2025-06-17 13:42:45] [INFO] 🔒 Browser closed successfully
+[2025-06-17 13:42:45] [INFO] 🏁 Scraper shutdown complete
+[2025-06-17 13:42:49] [INFO] 🔒 Browser closed successfully
+[2025-06-17 13:42:49] [INFO] 🏁 Scraper shutdown complete
+[2025-06-17 13:42:54] [INFO] 🎯 Starting Enhanced Playwright Roulette Scraper with Advanced Error Handling
+[2025-06-17 13:42:54] [INFO] 🐛 Debug mode: ENABLED
+[2025-06-17 13:42:54] [INFO] 🔐 LOGIN_URL: https://www.iamonstro.com.br/sistema/index.php
+[2025-06-17 13:42:54] [INFO] 🔐 DASHBOARD_URL: https://www.iamonstro.com.br/sistema/dashboard.php?mesa=Lightning%20Roulette
+[2025-06-17 13:42:54] [INFO] 🔐 USERNAME: gua***
+[2025-06-17 13:42:54] [INFO] 🔐 PASSWORD: SET
+[2025-06-17 13:42:54] [INFO] Loaded 37 previously processed numbers
+[2025-06-17 13:42:54] [INFO] 🚀 Initializing Playwright with GPU acceleration...
+[2025-06-17 13:44:18] [INFO] 🔒 Browser closed successfully
+[2025-06-17 13:44:18] [INFO] 🏁 Scraper shutdown complete

@@ -1,0 +1,65 @@
+# ===========================================
+# PLANTILLA DE VARIABLES DE ENTORNO RAILWAY
+# ===========================================
+# Estas variables se configuran en Railway Dashboard
+
+# ===== CREDENCIALES (REQUERIDO - COMPLETAR) =====
+ROULETTE_USERNAME=tu_usuario_aqui
+ROULETTE_PASSWORD=tu_password_aqui
+
+# ===== URLs DEL SITIO =====
+LOGIN_URL=https://bcgame.com/login
+DASHBOARD_URL=https://bcgame.com/game/lightning-roulette
+
+# ===== CONFIGURACIÓN =====
+REFRESH_INTERVAL=30
+
+# ===== VARIABLES RAILWAY (AUTO-GENERADAS) =====
+# Estas aparecen automáticamente cuando agregas los plugins
+# NO necesitas configurarlas manualmente
+
+# Redis Plugin Variables (Railway auto-genera estas)
+REDIS_PUBLIC_URL=          # ⭐ PRIORIDAD 1 - URL pública para conexiones externas
+Connection_redis=          # ⭐ PRIORIDAD 2 - URL alternativa de conexión
+REDIS_URL=                 # ⚠️  URL privada (solo para Railway interno)
+REDIS_PASSWORD=            # Password de Redis
+REDISPASSWORD=             # Password alternativo
+REDIS_PORT=                # Puerto Redis (6379)
+REDISUSER=                 # Usuario Redis
+
+# PostgreSQL Plugin Variables (Railway auto-genera estas)
+DATABASE_PUBLIC_URL=       # ⭐ PRIORIDAD 1 - URL pública para conexiones externas  
+DATABASE_URL=              # ⚠️  URL privada (solo para Railway interno)
+PGHOST=                    # Host PostgreSQL
+PGPORT=                    # Puerto PostgreSQL (5432)
+PGUSER=                    # Usuario PostgreSQL
+POSTGRES_USER=             # Usuario alternativo
+POSTGRES_DB=               # Nombre de la base de datos
+POSTGRES_PASSWORD=         # Password PostgreSQL
+
+# Railway System Variables
+RAILWAY_RUN_AS_ROOT=
+RAILWAY_RUN_UID=
+
+# ============= INSTRUCCIONES RAILWAY =============
+# 1. Ve a tu proyecto en Railway
+# 2. Agrega plugin "Redis" 
+# 3. Agrega plugin "PostgreSQL"
+# 4. En Variables, agrega las variables de arriba
+# 5. Railway generará automáticamente REDIS_URL y DATABASE_URL
+
+# ============= ESTRUCTURA REDIS =============
+# El scraper guardará datos en Redis con estas claves:
+# - roulette:latest          -> Último número
+# - roulette:history         -> Lista de últimos 100 números  
+# - roulette:colors:red      -> Contador números rojos
+# - roulette:colors:black    -> Contador números negros
+# - roulette:colors:green    -> Contador números verdes
+# - roulette:total_spins     -> Total de giros
+# - roulette:stats           -> Hash con estadísticas generales
+
+# ============= ESTRUCTURA POSTGRESQL =============
+# Tablas que se crearán automáticamente:
+# - roulette_history              -> Sesiones de scraping
+# - roulette_numbers_individual   -> Números individuales
+# - roulette_stats               -> Estadísticas agregadas 

@@ -1,0 +1,75 @@
+=== CONFIGURACIÓN DEL SCRAPER DE RULETA MEJORADO ===
+
+CREAR ARCHIVO .env CON EL SIGUIENTE CONTENIDO:
+
+LOGIN_URL=https://bcgame.com/login
+DASHBOARD_URL=https://bcgame.com/game/lightning-roulette
+ROULETTE_USERNAME=tu_usuario_aqui
+ROULETTE_PASSWORD=tu_password_aqui
+SUPABASE_URL=https://tu_proyecto.supabase.co
+SUPABASE_KEY=tu_api_key_aqui
+REFRESH_INTERVAL=30
+
+=== MEJORAS IMPLEMENTADAS ===
+
+1. EVITA MÚLTIPLES INSTANCIAS
+   - Usa un archivo lock (roulette_scraper.lock)
+   - Solo permite una ejecución a la vez
+
+2. LOGIN MEJORADO
+   - Múltiples selectores para encontrar campos
+   - Mejor manejo de errores
+   - Timeouts configurables
+
+3. VELOCIDAD DE ESCRITURA OPTIMIZADA
+   - Escritura en lote a archivos
+   - JSON sin espacios innecesarios
+   - Escritura atómica (evita corrupción)
+   - Buffering optimizado en logs
+
+4. VERIFICACIÓN DE REPETIDOS MEJORADA
+   - Hash MD5 para comparación rápida
+   - Archivo de números vistos anteriormente
+   - Verificación por conjuntos (O(1))
+   - Evita procesamiento innecesario
+
+5. EXTRACCIÓN DE DATOS ROBUSTA
+   - Múltiples métodos de extracción
+   - Búsqueda por JavaScript mejorada
+   - Método alternativo con regex
+   - Manejo de páginas dinámicas
+
+6. CONFIGURACIÓN INTELIGENTE
+   - Valores por defecto si no hay .env
+   - Intervalos configurables
+   - URLs configurables
+
+=== INSTRUCCIONES DE USO ===
+
+1. Crear archivo .env con tus credenciales reales
+2. Instalar dependencias: pip install -r requirements.txt
+3. Ejecutar: python roulette_scraper.py
+4. El script creará automáticamente los directorios necesarios
+5. Los logs se guardan en roulette_data/roulette_scraper.log
+
+=== ARCHIVOS GENERADOS ===
+
+- roulette_scraper.lock: Evita ejecuciones múltiples
+- roulette_data/roulette_numbers.json: Números más recientes
+- roulette_data/processed_numbers.txt: Números ya procesados
+- roulette_data/last_seen_numbers.json: Últimos números vistos
+- roulette_data/roulette_scraper.log: Logs del sistema
+
+=== MANEJO DE ERRORES ===
+
+- Reintentos automáticos con backoff
+- Límite de fallos consecutivos
+- Logs detallados para debugging
+- Limpieza automática al salir
+
+=== RENDIMIENTO ===
+
+- Intervalo reducido de 60s a 30s
+- Envío en lote a Supabase
+- Verificación hash para duplicados
+- Optimizaciones del navegador (sin imágenes, etc) 

@@ -1,0 +1,322 @@
+[2025-05-19 06:19:38] Starting Lightning Roulette JSON Updater...
+[2025-05-19 06:19:40] Logging in...
+[2025-05-19 06:19:48] Navigating to dashboard...
+[2025-05-19 06:19:57] Extracting numbers...
+[2025-05-19 06:20:00] Extracted 20 numbers. Most recent: 8
+[2025-05-19 06:20:02] Saved 20 numbers to roulette_numbers.json
+[2025-05-19 06:20:02] Most recent number (SKIPPING): 8
+[2025-05-19 06:20:02] Processing 19 numbers...
+[2025-05-19 06:20:02] Processing new number: 20
+[2025-05-19 06:20:02] Failed to send number 20 to Supabase. Status: 400
+[2025-05-19 06:20:02] Processing new number: 11
+[2025-05-19 06:20:02] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:20:02] Processing new number: 35
+[2025-05-19 06:20:03] Failed to send number 35 to Supabase. Status: 400
+[2025-05-19 06:20:03] Processing new number: 30
+[2025-05-19 06:20:03] Failed to send number 30 to Supabase. Status: 400
+[2025-05-19 06:20:03] Processing new number: 22
+[2025-05-19 06:20:03] Failed to send number 22 to Supabase. Status: 400
+[2025-05-19 06:20:03] Processing new number: 9
+[2025-05-19 06:20:03] Failed to send number 9 to Supabase. Status: 400
+[2025-05-19 06:20:03] Processing new number: 32
+[2025-05-19 06:20:04] Failed to send number 32 to Supabase. Status: 400
+[2025-05-19 06:20:04] Processing new number: 10
+[2025-05-19 06:20:04] Failed to send number 10 to Supabase. Status: 400
+[2025-05-19 06:20:04] Processing new number: 11
+[2025-05-19 06:20:04] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:20:04] Processing new number: 5
+[2025-05-19 06:20:04] Failed to send number 5 to Supabase. Status: 400
+[2025-05-19 06:20:04] Processing new number: 23
+[2025-05-19 06:20:05] Failed to send number 23 to Supabase. Status: 400
+[2025-05-19 06:20:05] Processing new number: 11
+[2025-05-19 06:20:05] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:20:05] Processing new number: 2
+[2025-05-19 06:20:05] Failed to send number 2 to Supabase. Status: 400
+[2025-05-19 06:20:05] Processing new number: 6
+[2025-05-19 06:20:05] Failed to send number 6 to Supabase. Status: 400
+[2025-05-19 06:20:05] Processing new number: 12
+[2025-05-19 06:20:05] Failed to send number 12 to Supabase. Status: 400
+[2025-05-19 06:20:05] Processing new number: 32
+[2025-05-19 06:20:06] Failed to send number 32 to Supabase. Status: 400
+[2025-05-19 06:20:06] Processing new number: 8
+[2025-05-19 06:20:06] Failed to send number 8 to Supabase. Status: 400
+[2025-05-19 06:20:06] Processing new number: 12
+[2025-05-19 06:20:06] Failed to send number 12 to Supabase. Status: 400
+[2025-05-19 06:20:06] Processing new number: 35
+[2025-05-19 06:20:06] Failed to send number 35 to Supabase. Status: 400
+[2025-05-19 06:20:06] Completed! Successfully sent 0 new numbers to Supabase.
+[2025-05-19 06:20:06] Waiting 60 seconds before next check...
+[2025-05-19 06:21:10] Logging in...
+[2025-05-19 06:21:33] Navigating to dashboard...
+[2025-05-19 06:21:42] Extracting numbers...
+[2025-05-19 06:21:44] Extracted 20 numbers. Most recent: 6
+[2025-05-19 06:21:46] Saved 20 numbers to roulette_numbers.json
+[2025-05-19 06:21:46] Most recent number (SKIPPING): 6
+[2025-05-19 06:21:46] Processing 19 numbers...
+[2025-05-19 06:21:46] Processing new number: 34
+[2025-05-19 06:21:46] Failed to send number 34 to Supabase. Status: 400
+[2025-05-19 06:21:46] Processing new number: 8
+[2025-05-19 06:21:46] Failed to send number 8 to Supabase. Status: 400
+[2025-05-19 06:21:46] Processing new number: 20
+[2025-05-19 06:21:47] Failed to send number 20 to Supabase. Status: 400
+[2025-05-19 06:21:47] Processing new number: 11
+[2025-05-19 06:21:47] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:21:47] Processing new number: 35
+[2025-05-19 06:21:47] Failed to send number 35 to Supabase. Status: 400
+[2025-05-19 06:21:47] Processing new number: 30
+[2025-05-19 06:21:47] Failed to send number 30 to Supabase. Status: 400
+[2025-05-19 06:21:47] Processing new number: 22
+[2025-05-19 06:21:48] Failed to send number 22 to Supabase. Status: 400
+[2025-05-19 06:21:48] Processing new number: 9
+[2025-05-19 06:21:48] Failed to send number 9 to Supabase. Status: 400
+[2025-05-19 06:21:48] Processing new number: 32
+[2025-05-19 06:21:48] Failed to send number 32 to Supabase. Status: 400
+[2025-05-19 06:21:48] Processing new number: 10
+[2025-05-19 06:21:48] Failed to send number 10 to Supabase. Status: 400
+[2025-05-19 06:21:48] Processing new number: 11
+[2025-05-19 06:21:49] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:21:49] Processing new number: 5
+[2025-05-19 06:21:49] Failed to send number 5 to Supabase. Status: 400
+[2025-05-19 06:21:49] Processing new number: 23
+[2025-05-19 06:21:49] Failed to send number 23 to Supabase. Status: 400
+[2025-05-19 06:21:49] Processing new number: 11
+[2025-05-19 06:21:49] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:21:49] Processing new number: 2
+[2025-05-19 06:21:49] Failed to send number 2 to Supabase. Status: 400
+[2025-05-19 06:21:49] Processing new number: 6
+[2025-05-19 06:21:50] Failed to send number 6 to Supabase. Status: 400
+[2025-05-19 06:21:50] Processing new number: 12
+[2025-05-19 06:21:50] Failed to send number 12 to Supabase. Status: 400
+[2025-05-19 06:21:50] Processing new number: 32
+[2025-05-19 06:21:50] Failed to send number 32 to Supabase. Status: 400
+[2025-05-19 06:21:50] Processing new number: 8
+[2025-05-19 06:21:50] Failed to send number 8 to Supabase. Status: 400
+[2025-05-19 06:21:50] Completed! Successfully sent 0 new numbers to Supabase.
+[2025-05-19 06:21:50] Waiting 60 seconds before next check...
+[2025-05-19 06:22:53] Logging in...
+[2025-05-19 06:23:17] Navigating to dashboard...
+[2025-05-19 06:23:27] Extracting numbers...
+[2025-05-19 06:23:29] Extracted 20 numbers. Most recent: 23
+[2025-05-19 06:23:31] Saved 20 numbers to roulette_numbers.json
+[2025-05-19 06:23:31] Most recent number (SKIPPING): 23
+[2025-05-19 06:23:31] Processing 19 numbers...
+[2025-05-19 06:23:31] Processing new number: 3
+[2025-05-19 06:23:31] Failed to send number 3 to Supabase. Status: 400
+[2025-05-19 06:23:31] Processing new number: 10
+[2025-05-19 06:23:32] Failed to send number 10 to Supabase. Status: 400
+[2025-05-19 06:23:32] Processing new number: 6
+[2025-05-19 06:23:32] Failed to send number 6 to Supabase. Status: 400
+[2025-05-19 06:23:32] Processing new number: 34
+[2025-05-19 06:23:32] Failed to send number 34 to Supabase. Status: 400
+[2025-05-19 06:23:32] Processing new number: 8
+[2025-05-19 06:23:32] Failed to send number 8 to Supabase. Status: 400
+[2025-05-19 06:23:32] Processing new number: 20
+[2025-05-19 06:23:32] Failed to send number 20 to Supabase. Status: 400
+[2025-05-19 06:23:32] Processing new number: 11
+[2025-05-19 06:23:33] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:23:33] Processing new number: 35
+[2025-05-19 06:23:33] Failed to send number 35 to Supabase. Status: 400
+[2025-05-19 06:23:33] Processing new number: 30
+[2025-05-19 06:23:33] Failed to send number 30 to Supabase. Status: 400
+[2025-05-19 06:23:33] Processing new number: 22
+[2025-05-19 06:23:33] Failed to send number 22 to Supabase. Status: 400
+[2025-05-19 06:23:33] Processing new number: 9
+[2025-05-19 06:23:34] Failed to send number 9 to Supabase. Status: 400
+[2025-05-19 06:23:34] Processing new number: 32
+[2025-05-19 06:23:34] Failed to send number 32 to Supabase. Status: 400
+[2025-05-19 06:23:34] Processing new number: 10
+[2025-05-19 06:23:34] Failed to send number 10 to Supabase. Status: 400
+[2025-05-19 06:23:34] Processing new number: 11
+[2025-05-19 06:23:34] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:23:34] Processing new number: 5
+[2025-05-19 06:23:35] Failed to send number 5 to Supabase. Status: 400
+[2025-05-19 06:23:35] Processing new number: 23
+[2025-05-19 06:23:35] Failed to send number 23 to Supabase. Status: 400
+[2025-05-19 06:23:35] Processing new number: 11
+[2025-05-19 06:23:35] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:23:35] Processing new number: 2
+[2025-05-19 06:23:35] Failed to send number 2 to Supabase. Status: 400
+[2025-05-19 06:23:35] Processing new number: 6
+[2025-05-19 06:23:35] Failed to send number 6 to Supabase. Status: 400
+[2025-05-19 06:23:35] Completed! Successfully sent 0 new numbers to Supabase.
+[2025-05-19 06:23:35] Waiting 60 seconds before next check...
+[2025-05-19 06:24:38] Logging in...
+[2025-05-19 06:25:01] Navigating to dashboard...
+[2025-05-19 06:25:11] Extracting numbers...
+[2025-05-19 06:25:13] Extracted 20 numbers. Most recent: 20
+[2025-05-19 06:25:15] Saved 20 numbers to roulette_numbers.json
+[2025-05-19 06:25:15] Most recent number (SKIPPING): 20
+[2025-05-19 06:25:15] Processing 19 numbers...
+[2025-05-19 06:25:15] Processing new number: 35
+[2025-05-19 06:25:15] Failed to send number 35 to Supabase. Status: 400
+[2025-05-19 06:25:15] Processing new number: 23
+[2025-05-19 06:25:16] Failed to send number 23 to Supabase. Status: 400
+[2025-05-19 06:25:16] Processing new number: 3
+[2025-05-19 06:25:16] Failed to send number 3 to Supabase. Status: 400
+[2025-05-19 06:25:16] Processing new number: 10
+[2025-05-19 06:25:16] Failed to send number 10 to Supabase. Status: 400
+[2025-05-19 06:25:16] Processing new number: 6
+[2025-05-19 06:25:16] Failed to send number 6 to Supabase. Status: 400
+[2025-05-19 06:25:16] Processing new number: 34
+[2025-05-19 06:25:17] Failed to send number 34 to Supabase. Status: 400
+[2025-05-19 06:25:17] Processing new number: 8
+[2025-05-19 06:25:17] Failed to send number 8 to Supabase. Status: 400
+[2025-05-19 06:25:17] Processing new number: 20
+[2025-05-19 06:25:17] Failed to send number 20 to Supabase. Status: 400
+[2025-05-19 06:25:17] Processing new number: 11
+[2025-05-19 06:25:17] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:25:17] Processing new number: 35
+[2025-05-19 06:25:18] Failed to send number 35 to Supabase. Status: 400
+[2025-05-19 06:25:18] Processing new number: 30
+[2025-05-19 06:25:18] Failed to send number 30 to Supabase. Status: 400
+[2025-05-19 06:25:18] Processing new number: 22
+[2025-05-19 06:25:18] Failed to send number 22 to Supabase. Status: 400
+[2025-05-19 06:25:18] Processing new number: 9
+[2025-05-19 06:25:18] Failed to send number 9 to Supabase. Status: 400
+[2025-05-19 06:25:18] Processing new number: 32
+[2025-05-19 06:25:19] Failed to send number 32 to Supabase. Status: 400
+[2025-05-19 06:25:19] Processing new number: 10
+[2025-05-19 06:25:19] Failed to send number 10 to Supabase. Status: 400
+[2025-05-19 06:25:19] Processing new number: 11
+[2025-05-19 06:25:19] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:25:19] Processing new number: 5
+[2025-05-19 06:25:19] Failed to send number 5 to Supabase. Status: 400
+[2025-05-19 06:25:19] Processing new number: 23
+[2025-05-19 06:25:19] Failed to send number 23 to Supabase. Status: 400
+[2025-05-19 06:25:19] Processing new number: 11
+[2025-05-19 06:25:20] Failed to send number 11 to Supabase. Status: 400
+[2025-05-19 06:25:20] Completed! Successfully sent 0 new numbers to Supabase.
+[2025-05-19 06:25:20] Waiting 60 seconds before next check...
+[2025-05-19 06:26:33] Logging in...
+[2025-05-19 06:26:41] Navigating to dashboard...
+[2025-05-19 06:26:44] Stopped by user.
+[2025-05-19 06:26:51] Starting Lightning Roulette JSON Updater...
+[2025-05-19 06:26:51] Found existing JSON file: roulette_numbers.json
+[2025-05-19 06:26:51] Loaded 20 numbers from existing file
+[2025-05-19 06:26:51] Most recent number (SKIPPING): 20
+[2025-05-19 06:26:51] Processing 19 numbers...
+[2025-05-19 06:26:51] Processing new number: 35
+[2025-05-19 06:26:51] Sending request to Supabase: {"number_value": 35, "color": "black"}
+[2025-05-19 06:26:51] Failed to send number 35 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (635, null, 35, black, 2025-05-19 11:27:23.063751+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:51] Processing new number: 23
+[2025-05-19 06:26:51] Sending request to Supabase: {"number_value": 23, "color": "red"}
+[2025-05-19 06:26:51] Failed to send number 23 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (636, null, 23, red, 2025-05-19 11:27:23.32192+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:51] Processing new number: 3
+[2025-05-19 06:26:51] Sending request to Supabase: {"number_value": 3, "color": "red"}
+[2025-05-19 06:26:51] Failed to send number 3 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (637, null, 3, red, 2025-05-19 11:27:23.597083+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:51] Processing new number: 10
+[2025-05-19 06:26:51] Sending request to Supabase: {"number_value": 10, "color": "black"}
+[2025-05-19 06:26:52] Failed to send number 10 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (638, null, 10, black, 2025-05-19 11:27:23.847612+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:52] Processing new number: 6
+[2025-05-19 06:26:52] Sending request to Supabase: {"number_value": 6, "color": "black"}
+[2025-05-19 06:26:52] Failed to send number 6 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (639, null, 6, black, 2025-05-19 11:27:24.076862+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:52] Processing new number: 34
+[2025-05-19 06:26:52] Sending request to Supabase: {"number_value": 34, "color": "red"}
+[2025-05-19 06:26:52] Failed to send number 34 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (640, null, 34, red, 2025-05-19 11:27:24.314718+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:52] Processing new number: 8
+[2025-05-19 06:26:52] Sending request to Supabase: {"number_value": 8, "color": "black"}
+[2025-05-19 06:26:52] Failed to send number 8 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (641, null, 8, black, 2025-05-19 11:27:24.529007+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:52] Processing new number: 20
+[2025-05-19 06:26:52] Sending request to Supabase: {"number_value": 20, "color": "black"}
+[2025-05-19 06:26:53] Failed to send number 20 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (642, null, 20, black, 2025-05-19 11:27:24.75842+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:53] Processing new number: 11
+[2025-05-19 06:26:53] Sending request to Supabase: {"number_value": 11, "color": "black"}
+[2025-05-19 06:26:53] Failed to send number 11 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (643, null, 11, black, 2025-05-19 11:27:25.004241+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:53] Processing new number: 35
+[2025-05-19 06:26:53] Sending request to Supabase: {"number_value": 35, "color": "black"}
+[2025-05-19 06:26:53] Failed to send number 35 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (644, null, 35, black, 2025-05-19 11:27:25.246661+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:53] Processing new number: 30
+[2025-05-19 06:26:53] Sending request to Supabase: {"number_value": 30, "color": "red"}
+[2025-05-19 06:26:53] Failed to send number 30 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (645, null, 30, red, 2025-05-19 11:27:25.494923+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:53] Processing new number: 22
+[2025-05-19 06:26:53] Sending request to Supabase: {"number_value": 22, "color": "black"}
+[2025-05-19 06:26:54] Failed to send number 22 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (646, null, 22, black, 2025-05-19 11:27:25.721405+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:54] Processing new number: 9
+[2025-05-19 06:26:54] Sending request to Supabase: {"number_value": 9, "color": "red"}
+[2025-05-19 06:26:54] Failed to send number 9 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (647, null, 9, red, 2025-05-19 11:27:25.964366+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:54] Processing new number: 32
+[2025-05-19 06:26:54] Sending request to Supabase: {"number_value": 32, "color": "red"}
+[2025-05-19 06:26:54] Failed to send number 32 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (648, null, 32, red, 2025-05-19 11:27:26.191715+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:54] Processing new number: 10
+[2025-05-19 06:26:54] Sending request to Supabase: {"number_value": 10, "color": "black"}
+[2025-05-19 06:26:54] Failed to send number 10 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (649, null, 10, black, 2025-05-19 11:27:26.432306+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:54] Processing new number: 11
+[2025-05-19 06:26:54] Sending request to Supabase: {"number_value": 11, "color": "black"}
+[2025-05-19 06:26:55] Failed to send number 11 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (650, null, 11, black, 2025-05-19 11:27:26.689681+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:55] Processing new number: 5
+[2025-05-19 06:26:55] Sending request to Supabase: {"number_value": 5, "color": "red"}
+[2025-05-19 06:26:55] Failed to send number 5 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (651, null, 5, red, 2025-05-19 11:27:26.944626+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:55] Processing new number: 23
+[2025-05-19 06:26:55] Sending request to Supabase: {"number_value": 23, "color": "red"}
+[2025-05-19 06:26:55] Failed to send number 23 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (652, null, 23, red, 2025-05-19 11:27:27.172107+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:55] Processing new number: 11
+[2025-05-19 06:26:55] Sending request to Supabase: {"number_value": 11, "color": "black"}
+[2025-05-19 06:26:55] Failed to send number 11 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (653, null, 11, black, 2025-05-19 11:27:27.400173+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:26:55] Completed! Successfully sent 0 new numbers to Supabase.
+[2025-05-19 06:26:58] Logging in...
+[2025-05-19 06:27:05] Navigating to dashboard...
+[2025-05-19 06:27:14] Extracting numbers...
+[2025-05-19 06:27:16] Extracted 20 numbers. Most recent: 26
+[2025-05-19 06:27:18] Saved 20 numbers to roulette_numbers.json
+[2025-05-19 06:27:18] Most recent number (SKIPPING): 26
+[2025-05-19 06:27:18] Processing 19 numbers...
+[2025-05-19 06:27:18] Processing new number: 31
+[2025-05-19 06:27:18] Sending request to Supabase: {"number_value": 31, "color": "black"}
+[2025-05-19 06:27:19] Failed to send number 31 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (654, null, 31, black, 2025-05-19 11:27:50.955826+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:19] Processing new number: 20
+[2025-05-19 06:27:19] Sending request to Supabase: {"number_value": 20, "color": "black"}
+[2025-05-19 06:27:19] Failed to send number 20 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (655, null, 20, black, 2025-05-19 11:27:51.234214+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:19] Processing new number: 20
+[2025-05-19 06:27:19] Sending request to Supabase: {"number_value": 20, "color": "black"}
+[2025-05-19 06:27:19] Failed to send number 20 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (656, null, 20, black, 2025-05-19 11:27:51.464627+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:19] Processing new number: 35
+[2025-05-19 06:27:19] Sending request to Supabase: {"number_value": 35, "color": "black"}
+[2025-05-19 06:27:20] Failed to send number 35 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (657, null, 35, black, 2025-05-19 11:27:51.714073+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:20] Processing new number: 23
+[2025-05-19 06:27:20] Sending request to Supabase: {"number_value": 23, "color": "red"}
+[2025-05-19 06:27:20] Failed to send number 23 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (658, null, 23, red, 2025-05-19 11:27:51.938635+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:20] Processing new number: 3
+[2025-05-19 06:27:20] Sending request to Supabase: {"number_value": 3, "color": "red"}
+[2025-05-19 06:27:20] Failed to send number 3 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (659, null, 3, red, 2025-05-19 11:27:52.186167+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:20] Processing new number: 10
+[2025-05-19 06:27:20] Sending request to Supabase: {"number_value": 10, "color": "black"}
+[2025-05-19 06:27:20] Failed to send number 10 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (660, null, 10, black, 2025-05-19 11:27:52.414893+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:20] Processing new number: 6
+[2025-05-19 06:27:20] Sending request to Supabase: {"number_value": 6, "color": "black"}
+[2025-05-19 06:27:21] Failed to send number 6 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (661, null, 6, black, 2025-05-19 11:27:52.680026+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:21] Processing new number: 34
+[2025-05-19 06:27:21] Sending request to Supabase: {"number_value": 34, "color": "red"}
+[2025-05-19 06:27:21] Failed to send number 34 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (662, null, 34, red, 2025-05-19 11:27:52.923614+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:21] Processing new number: 8
+[2025-05-19 06:27:21] Sending request to Supabase: {"number_value": 8, "color": "black"}
+[2025-05-19 06:27:21] Failed to send number 8 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (663, null, 8, black, 2025-05-19 11:27:53.163846+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:21] Processing new number: 20
+[2025-05-19 06:27:21] Sending request to Supabase: {"number_value": 20, "color": "black"}
+[2025-05-19 06:27:21] Failed to send number 20 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (664, null, 20, black, 2025-05-19 11:27:53.404848+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:21] Processing new number: 11
+[2025-05-19 06:27:21] Sending request to Supabase: {"number_value": 11, "color": "black"}
+[2025-05-19 06:27:22] Failed to send number 11 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (665, null, 11, black, 2025-05-19 11:27:53.644738+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:22] Processing new number: 35
+[2025-05-19 06:27:22] Sending request to Supabase: {"number_value": 35, "color": "black"}
+[2025-05-19 06:27:22] Failed to send number 35 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (666, null, 35, black, 2025-05-19 11:27:53.944769+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:22] Processing new number: 30
+[2025-05-19 06:27:22] Sending request to Supabase: {"number_value": 30, "color": "red"}
+[2025-05-19 06:27:22] Failed to send number 30 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (667, null, 30, red, 2025-05-19 11:27:54.166015+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:22] Processing new number: 22
+[2025-05-19 06:27:22] Sending request to Supabase: {"number_value": 22, "color": "black"}
+[2025-05-19 06:27:22] Failed to send number 22 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (668, null, 22, black, 2025-05-19 11:27:54.406481+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:22] Processing new number: 9
+[2025-05-19 06:27:22] Sending request to Supabase: {"number_value": 9, "color": "red"}
+[2025-05-19 06:27:22] Failed to send number 9 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (669, null, 9, red, 2025-05-19 11:27:54.632921+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:22] Processing new number: 32
+[2025-05-19 06:27:22] Sending request to Supabase: {"number_value": 32, "color": "red"}
+[2025-05-19 06:27:23] Failed to send number 32 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (670, null, 32, red, 2025-05-19 11:27:54.8702+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:23] Processing new number: 10
+[2025-05-19 06:27:23] Sending request to Supabase: {"number_value": 10, "color": "black"}
+[2025-05-19 06:27:23] Failed to send number 10 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (671, null, 10, black, 2025-05-19 11:27:55.102568+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:23] Processing new number: 11
+[2025-05-19 06:27:23] Sending request to Supabase: {"number_value": 11, "color": "black"}
+[2025-05-19 06:27:23] Failed to send number 11 to Supabase. Status: 400, Response: {"code":"23502","details":"Failing row contains (672, null, 11, black, 2025-05-19 11:27:55.324703+00).","hint":null,"message":"null value in column \"history_entry_id\" of relation \"roulette_numbers_individual\" violates not-null constraint"}
+[2025-05-19 06:27:23] Completed! Successfully sent 0 new numbers to Supabase.
+[2025-05-19 06:27:23] Waiting 60 seconds before next check...
+[2025-05-19 06:27:34] Stopped by user.

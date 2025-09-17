@@ -1,0 +1,15 @@
+# Dependencias para Railway deployment
+selenium>=4.0.0
+webdriver-manager>=4.0.0
+python-dotenv>=1.0.0
+psutil>=5.9.0
+
+# Bases de datos
+redis>=5.0.0
+psycopg2-binary>=2.9.0
+
+# API Flask
+flask>=2.3.0
+
+# Utilidades estándar (no necesario especificar versiones)
+# hashlib, datetime, json, time, os, sys son parte del stdlib 
