@@ -9,15 +9,6 @@
     
     <!-- Área de chat -->
     <div class="flex-1 overflow-y-auto mb-4 border rounded-lg p-3">
-      <div class="flex justify-end mb-2">
-        <button 
-          @click="clearLastMessages(5)" 
-          class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded flex items-center"
-          v-if="chatMessages.length > 6"
-        >
-          <span>Limpiar 5 últimos mensajes</span>
-        </button>
-      </div>
       <div 
         v-for="(message, index) in chatMessages" 
         :key="'msg-' + message.id"
@@ -913,7 +904,7 @@ onMounted(async () => {
   }, 1000);
   
   // Mensaje de bienvenida
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'bot',
     message: '¡Bienvenido al asistente de Ruleta! Puedes ingresar números o pedir predicciones.',
@@ -1003,7 +994,7 @@ const startAutoRefresh = async () => {
             ? `🎉 ¡VICTORIA! El número ${latestNumber} se encontró en: ${currentResult.matchingGroups.join(', ')}`
             : `❌ Derrota. El número ${latestNumber} no estaba en los grupos principales.`;
 
-          chatMessages.value.push({
+          addMessageToChat({
             id: Date.now(),
             sender: 'bot',
             message: `🔥 ¡Nuevo número detectado automáticamente: ${latestNumber}!\n${resultMessage}`,
@@ -1019,7 +1010,7 @@ const startAutoRefresh = async () => {
           // Generar nuevas predicciones automáticamente
           setTimeout(async () => {
             const statNumbers = await generateStatPredictions(6);
-            chatMessages.value.push({
+            addMessageToChat({
               id: Date.now() + 1,
               sender: 'bot',
               message: `Basado en el nuevo número, te recomiendo estos números para la próxima jugada:`,
@@ -1232,7 +1223,7 @@ const initVoiceRecognition = () => {
             
             // Sugerir alternativas (entrada manual)
             setTimeout(() => {
-              chatMessages.value.push({
+              addMessageToChat({
                 id: Date.now(),
                 sender: 'bot',
                 message: 'El reconocimiento de voz está fallando. Puedes usar el teclado para ingresar números directamente.',
@@ -1274,7 +1265,7 @@ const toggleVoiceRecognition = async () => {
     if (!navigator.onLine) {
       voiceError.value = 'No hay conexión a internet. El reconocimiento de voz requiere conexión.';
       // Sugerir alternativas
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now(),
         sender: 'bot',
         message: 'No hay conexión a internet. Por favor, ingresa los números manualmente usando el teclado.',
@@ -1369,7 +1360,7 @@ const toggleVoiceRecognition = async () => {
     voiceStatus.value = 'error';
     
     // Sugerir alternativa de entrada manual
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'Estamos teniendo problemas con el reconocimiento de voz. Por favor, usa el teclado para ingresar números.',
@@ -1423,7 +1414,7 @@ const retryVoiceRecognition = async () => {
       voiceStatus.value = 'error';
       
       // Sugerir alternativa de entrada manual
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now(),
         sender: 'bot',
         message: 'Seguimos teniendo problemas con el reconocimiento de voz. Puedes ingresar los números directamente usando el teclado.',
@@ -1439,7 +1430,7 @@ const sendMessage = async () => {
   if (!message) return;
   
   // Agregar mensaje del usuario al chat
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'user',
     message: message,
@@ -1487,7 +1478,7 @@ const sendMessage = async () => {
   if (numberToAdd !== null) {
     // Validar que el número está en el rango válido de la ruleta (0-36)
     if (isNaN(numberToAdd) || numberToAdd < 0 || numberToAdd > 36) {
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now(),
         sender: 'bot',
         message: `El número reconocido (${numberToAdd}) no es válido para la ruleta. Por favor, usa números entre 0 y 36.`,
@@ -1516,7 +1507,7 @@ const sendMessage = async () => {
           duplicateMessage += `\n\n❌ RESULTADO: Este número habría sido una DERROTA. No estaba en nuestras predicciones principales.`;
         }
         
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now(),
           sender: 'bot',
           message: duplicateMessage,
@@ -1594,7 +1585,7 @@ const sendMessage = async () => {
         }
         
         // Mensaje de confirmación con información de victoria/derrota
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now(),
           sender: 'bot',
           message: resultMessage,
@@ -1622,7 +1613,7 @@ const sendMessage = async () => {
           try {
             // Generar predicción estadística
             const statNumbers = await generateStatPredictions(6);
-            chatMessages.value.push({
+            addMessageToChat({
               id: Date.now() + 1,
               sender: 'bot',
               message: `Basado en estadísticas, te recomiendo estos números para la próxima jugada:`,
@@ -1634,7 +1625,7 @@ const sendMessage = async () => {
           }
         }, 500);
       } else {
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + 1,
           sender: 'bot',
           message: `Hubo un error al procesar el número ${numberToAdd}.`,
@@ -1643,7 +1634,7 @@ const sendMessage = async () => {
       }
     } catch (error) {
       console.error('Error processing number from voice:', error);
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 1,
         sender: 'bot',
         message: `Error al procesar el número ${numberToAdd}.`,
@@ -1673,7 +1664,7 @@ const sendMessage = async () => {
       const result = checkGroupsForNumber(numberToCheck);
       
       // Mostrar resultado de la apuesta
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 1,
         sender: 'bot',
         message: result.isWinning ? 
@@ -1706,7 +1697,7 @@ const sendMessage = async () => {
       return;
     } catch (error) {
       console.error('Error processing multiple numbers individually:', error);
-        chatMessages.value.push({
+        addMessageToChat({
         id: Date.now() + 1,
           sender: 'bot',
         message: 'Hubo un error al procesar los números individualmente. Por favor, inténtalo de nuevo.',
@@ -1748,7 +1739,7 @@ const sendMessage = async () => {
         }
         
         // Mostrar mensaje de confirmación destacando el último número jugado
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now(),
           sender: 'bot',
           message: `He procesado ${processed.processedCount} números correctamente. El último número jugado registrado es ${lastNumber}.${winMessage}`,
@@ -1771,7 +1762,7 @@ const sendMessage = async () => {
               activeGroupSet.value === 'statistical' ? Object.values(localStatGroups.value)[0] :
               Object.values(aiGroups.value)[0];
             
-            chatMessages.value.push({
+            addMessageToChat({
               id: Date.now() + 1,
               sender: 'bot',
               message: `Basado en el análisis de los números ingresados, te recomiendo estos para la próxima jugada:`,
@@ -1782,7 +1773,7 @@ const sendMessage = async () => {
             // También mostrar otra predicción con retraso
             setTimeout(async () => {
               const puxa = await generatePuxaUltraPredictions();
-              chatMessages.value.push({
+              addMessageToChat({
                 id: Date.now() + 2,
                 sender: 'bot',
                 message: `El método Puxa Ultra también recomienda:`,
@@ -1803,7 +1794,7 @@ const sendMessage = async () => {
         }
       } else {
         console.error("No se pudieron procesar números del mensaje:", message);
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + 1,
           sender: 'bot',
           message: 'No pude identificar números válidos en tu mensaje. Asegúrate de ingresar números del 0 al 36 separados por comas.',
@@ -1812,7 +1803,7 @@ const sendMessage = async () => {
       }
     } catch (error) {
       console.error('Error processing multiple numbers:', error);
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 1,
         sender: 'bot',
         message: 'Hubo un error al procesar los números. Por favor, inténtalo de nuevo.',
@@ -1855,7 +1846,7 @@ const sendMessage = async () => {
           duplicateMessage += `\n\n❌ RESULTADO: Este número habría sido una DERROTA. No estaba en nuestras predicciones principales.`;
         }
         
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now(),
           sender: 'bot',
           message: duplicateMessage,
@@ -1928,7 +1919,7 @@ const sendMessage = async () => {
           }
 
           // Mensaje de resultado local
-          chatMessages.value.push({
+          addMessageToChat({
             id: Date.now(),
             sender: 'bot',
             message: resultMessage,
@@ -1949,7 +1940,7 @@ const sendMessage = async () => {
             const statNumbers = await generateStatPredictions(6);
             const statMsg = `Basado en estadísticas, te recomiendo estos números para la próxima jugada:`;
             
-            chatMessages.value.push({
+            addMessageToChat({
               id: Date.now() + 1,
               sender: 'bot',
               message: statMsg,
@@ -1966,7 +1957,7 @@ const sendMessage = async () => {
             const tiaLuMsg = `Con el método "Tía Lu", estos son los números recomendados:`;
             
             setTimeout(() => {
-              chatMessages.value.push({
+              addMessageToChat({
                 id: Date.now() + 2,
                 sender: 'bot',
                 message: tiaLuMsg,
@@ -1990,7 +1981,7 @@ const sendMessage = async () => {
           emitter.emit('number-added', number);
         }
       } else {
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + 2,
           sender: 'bot',
           message: 'Hubo un error al procesar el número.',
@@ -1999,7 +1990,7 @@ const sendMessage = async () => {
       }
     } catch (error) {
       console.error('Error processing number:', error);
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 2,
         sender: 'bot',
         message: 'Hubo un error al procesar el número.',
@@ -2028,7 +2019,7 @@ const sendMessage = async () => {
       const data = await response.json();
       
       // Agregar respuesta del bot
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 3,
         sender: 'bot',
         message: data.respuesta || 'Lo siento, no pude procesar tu consulta.',
@@ -2038,7 +2029,7 @@ const sendMessage = async () => {
       console.error('Error al enviar mensaje:', error);
       
       // Mensaje de error
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 4,
         sender: 'bot',
         message: 'Lo siento, hubo un error al procesar tu mensaje. Inténtalo de nuevo.',
@@ -2074,7 +2065,7 @@ const processEnhancedPredictionResults = (predictionResults: any[], actualNumber
       }
 
       // Agregar mensaje al chat
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + index,
         sender: 'bot',
         message,
@@ -2323,7 +2314,7 @@ const getActiveGroupNumbers = (): number[] => {
 // Generar predicción aleatoria
 const generateRandomPrediction = () => {
   const numbers = generateRandomNumbers(5).sort((a, b) => a - b);
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'bot',
     message: 'He generado estos números aleatorios para ti:',
@@ -2336,7 +2327,7 @@ const generateRandomPrediction = () => {
 const generateStatPrediction = async () => {
   try {
     const numbers = (await generateStatPredictions(5)).sort((a, b) => a - b);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'Basado en las estadísticas recientes, estos son los números más probables:',
@@ -2345,7 +2336,7 @@ const generateStatPrediction = async () => {
     });
   } catch (error) {
     console.error('Error generating prediction:', error);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'No pude generar una predicción estadística en este momento.',
@@ -2358,7 +2349,7 @@ const generateStatPrediction = async () => {
 const generateTiaLuPrediction = async () => {
   try {
     const numbers = (await generateTiaLuPredictions()).sort((a, b) => a - b);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'Según el método "Tía Lu", estos son los números recomendados:',
@@ -2367,7 +2358,7 @@ const generateTiaLuPrediction = async () => {
     });
   } catch (error) {
     console.error('Error generating prediction:', error);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'No pude generar una predicción "Tía Lu" en este momento.',
@@ -2380,7 +2371,7 @@ const generateTiaLuPrediction = async () => {
 const generatePuxaUltraPrediction = async () => {
   try {
     const numbers = (await generatePuxaUltraPredictions()).sort((a, b) => a - b);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'Aplicando el método "Puxa Ultra", estos son los números recomendados:',
@@ -2389,7 +2380,7 @@ const generatePuxaUltraPrediction = async () => {
     });
   } catch (error) {
     console.error('Error generating prediction:', error);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'No pude generar una predicción "Puxa Ultra" en este momento.',
@@ -2460,7 +2451,7 @@ const formatTime = (timestamp: string) => {
 // Verificar último número ingresado
 const checkLastNumberResult = () => {
   if (!recentNumbers.value.length) {
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'No hay números recientes para verificar.',
@@ -2508,7 +2499,7 @@ const checkLastNumberResult = () => {
     baseMessage = getLosingMessage(lastNumber, result);
   }
   
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'bot',
     message: baseMessage + sectorRecommendationMsg,
@@ -2536,7 +2527,7 @@ const checkLastNumberResult = () => {
       // Método estadístico
       const statNumbers = (await generateStatPredictions(5)).sort((a, b) => a - b);
       
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + 1,
         sender: 'bot',
         message: `Nuevas predicciones para el próximo número:`,
@@ -2547,7 +2538,7 @@ const checkLastNumberResult = () => {
       // Método Tía Lu
       setTimeout(async () => {
         const tialuNumbers = (await generateTiaLuPredictions()).sort((a, b) => a - b);
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + 2,
           sender: 'bot',
           message: `También podrías considerar estos números del método Tía Lu:`,
@@ -2611,7 +2602,7 @@ const getHotSectorRecommendation = () => {
 const generateAutomaticPredictions = async (lastNumber: number) => {
   try {
     // Mostrar el número registrado
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: `Número ${lastNumber} registrado desde el historial. Generando predicciones...`,
@@ -2624,7 +2615,7 @@ const generateAutomaticPredictions = async (lastNumber: number) => {
       try {
         // Método estadístico
         const statNumbers = (await generateStatPredictions(6)).sort((a, b) => a - b);
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + 1,
           sender: 'bot',
           message: `Predicciones estadísticas para el próximo número:`,
@@ -2635,7 +2626,7 @@ const generateAutomaticPredictions = async (lastNumber: number) => {
         // Método Tía Lu con un pequeño retraso
         setTimeout(async () => {
           const tiaLuNumbers = (await generateTiaLuPredictions()).sort((a, b) => a - b);
-          chatMessages.value.push({
+          addMessageToChat({
             id: Date.now() + 2,
             sender: 'bot',
             message: `También puedes considerar estos números del método Tía Lu:`,
@@ -2746,17 +2737,28 @@ const clearLastMessages = (count: number) => {
   if (chatMessages.value.length <= count) {
     return; // No hacer nada si no hay suficientes mensajes
   }
-  
+
   // Eliminar los últimos 'count' mensajes
   chatMessages.value = chatMessages.value.slice(0, -count);
-  
+
   // Añadir un mensaje de sistema para indicar que se limpiaron mensajes
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'bot',
     message: `Se han eliminado los últimos ${count} mensajes para mantener el chat más limpio.`,
     timestamp: new Date().toISOString()
   });
+};
+
+// Función para añadir mensajes al chat manteniendo solo los últimos 5
+const addMessageToChat = (message: ChatMessage) => {
+  // Añadir el nuevo mensaje
+  addMessageToChat(message);
+
+  // Mantener solo los últimos 5 mensajes
+  if (chatMessages.value.length > 5) {
+    chatMessages.value = chatMessages.value.slice(-5);
+  }
 };
 
 // Métodos computados para estados de voz
@@ -2818,7 +2820,7 @@ const getVoiceButtonTitle = computed(() => {
 
 // Función para mostrar ayuda sobre reconocimiento de voz
 const showVoiceHelp = () => {
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'bot',
     message: `Problemas con el reconocimiento de voz:
@@ -2839,7 +2841,7 @@ const showVoiceHelp = () => {
 const switchToManualInput = () => {
   manualInputPreferred.value = true;
   voiceError.value = '';
-  chatMessages.value.push({
+  addMessageToChat({
     id: Date.now(),
     sender: 'bot',
     message: 'Has cambiado a entrada manual. Puedes ingresar números directamente usando el teclado.',
@@ -2891,7 +2893,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
     .filter(num => !isNaN(num) && num >= 0 && num <= 36);
 
   if (numbersArray.length === 0) {
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: 'No se encontraron números válidos en el mensaje. Asegúrate de ingresar números del 0 al 36 separados por comas.',
@@ -2927,7 +2929,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
         duplicatesSkipped++;
         console.log(`⏭️ SALTANDO número ${number} - ya existe en Redis`);
         
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + i,
           sender: 'bot',
           message: `⚠️ Número ${number} (pos. ${originalPosition}): DUPLICADO - Ya existe en el historial, saltando...`,
@@ -2974,7 +2976,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
         }
         
         // PASO 6: Mostrar resultado inmediatamente
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + i,
           sender: 'bot',
           message: resultMessage,
@@ -2991,7 +2993,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
         }
       } else {
         console.error(`❌ Error procesando número ${number}`);
-        chatMessages.value.push({
+        addMessageToChat({
           id: Date.now() + i,
           sender: 'bot',
           message: `Número ${number}: Error al procesar`,
@@ -3000,7 +3002,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
       }
     } catch (error) {
       console.error(`❌ Error procesando número ${number}:`, error);
-      chatMessages.value.push({
+      addMessageToChat({
         id: Date.now() + i,
         sender: 'bot',
         message: `Número ${number}: Error al procesar - ${error}`,
@@ -3032,7 +3034,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
       summaryMessage += `\n🎯 Eficacia: ${efficiencyPercentage}%`;
     }
     
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now() + 1000,
       sender: 'bot',
       message: summaryMessage,
@@ -3044,7 +3046,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
       setTimeout(async () => {
         try {
           const statNumbers = await generateStatPredictions(6);
-          chatMessages.value.push({
+          addMessageToChat({
             id: Date.now() + 2000,
             sender: 'bot',
             message: `Nuevas predicciones para el próximo número:`,
@@ -3058,7 +3060,7 @@ const processIndividualNumbersSequentially = async (numbersString: string) => {
     }
   } else {
     // Todos los números eran duplicados
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now() + 1000,
       sender: 'bot',
       message: `ℹ️ Todos los números ingresados ya existían en el historial. No se procesó ningún número nuevo.`,
@@ -3143,7 +3145,7 @@ const useGoogleSpeechRecognition = async () => {
 const handleRecognizedNumber = async (numberToAdd: number) => {
   // Validar que el número está en el rango válido de la ruleta (0-36)
   if (isNaN(numberToAdd) || numberToAdd < 0 || numberToAdd > 36) {
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: `El número reconocido (${numberToAdd}) no es válido para la ruleta. Por favor, usa números entre 0 y 36.`,
@@ -3205,7 +3207,7 @@ const handleRecognizedNumber = async (numberToAdd: number) => {
     }
     
     // Mensaje de confirmación con información de victoria/derrota
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: resultMessage,
@@ -3240,7 +3242,7 @@ const handleRecognizedNumber = async (numberToAdd: number) => {
     }
   } catch (error) {
     console.error('Error al procesar número reconocido:', error);
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: `Ha ocurrido un error al procesar el número. Por favor, intenta de nuevo.`,
@@ -3338,7 +3340,7 @@ const copyToClipboard = async (text: string) => {
     }
     
     // Mostrar confirmación
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: '📋 ¡Predicciones copiadas al portapapeles! Puedes pegarlas donde necesites.',
@@ -3350,7 +3352,7 @@ const copyToClipboard = async (text: string) => {
     console.error('Error copiando al portapapeles:', error);
     
     // Mostrar mensaje de error
-    chatMessages.value.push({
+    addMessageToChat({
       id: Date.now(),
       sender: 'bot',
       message: '❌ Error al copiar al portapapeles. Puedes seleccionar y copiar manualmente el texto.',
