@@ -51,6 +51,17 @@
             📊 Análisis Estrategias
           </button>
           <button
+            @click="tabActiva = 'groups'"
+            :class="[
+              'px-4 py-2 rounded transition-colors',
+              tabActiva === 'groups'
+                ? 'bg-yellow-600 text-white'
+                : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+            ]"
+          >
+            🎯 Grupos Estadísticas
+          </button>
+          <button
             @click="tabActiva = 'admin'"
             :class="[
               'px-4 py-2 rounded transition-colors',
@@ -117,6 +128,11 @@
         <StrategyAnalysisPanel />
       </div>
 
+      <!-- Vista de Análisis de Grupos -->
+      <div v-if="tabActiva === 'groups'" class="space-y-6">
+        <GroupStatisticsPanel />
+      </div>
+
       <!-- Vista de Administración -->
       <div v-if="tabActiva === 'admin'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Panel de Purga de Base de Datos -->
@@ -171,6 +187,7 @@ import AIPredictionPanel from '~/components/AIPredictionPanel.vue';
 import RedisMonitorPanel from '~/components/RedisMonitorPanel.vue';
 import AutomaticRouletteSystem from '~/components/AutomaticRouletteSystem.vue';
 import StrategyAnalysisPanel from '~/components/StrategyAnalysisPanel.vue';
+import GroupStatisticsPanel from '~/components/GroupStatisticsPanel.vue';
 
 // Estado de navegación
 const tabActiva = ref('principal');

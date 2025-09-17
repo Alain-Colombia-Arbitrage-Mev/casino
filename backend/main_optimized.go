@@ -77,6 +77,36 @@ type OptimizedMLFeatures struct {
 	LastUpdate        string                    `json:"last_update"`
 }
 
+// GroupStatistics estructura para estadísticas de grupos
+type GroupStatistics struct {
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
+	Numbers      []int   `json:"numbers"`
+	Description  string  `json:"description,omitempty"`
+	Hits         int     `json:"hits"`
+	Total        int     `json:"total"`
+	WinRate      float64 `json:"win_rate"`
+	Type         string  `json:"type"`
+	LastUpdate   string  `json:"last_update"`
+}
+
+// GroupStatisticsResponse respuesta completa de estadísticas de grupos
+type GroupStatisticsResponse struct {
+	TraditionalGroups []GroupStatistics `json:"traditional_groups"`
+	SectorGroups     []GroupStatistics `json:"sector_groups"`
+	BestPerforming   *GroupStatistics  `json:"best_performing"`
+	WorstPerforming  *GroupStatistics  `json:"worst_performing"`
+	Trends           []TrendAnalysis   `json:"trends"`
+	LastUpdate       string            `json:"last_update"`
+}
+
+// TrendAnalysis análisis de tendencias
+type TrendAnalysis struct {
+	Type     string  `json:"type"`
+	Strength float64 `json:"strength"`
+	Description string `json:"description"`
+}
+
 func main() {
 	log.Println("🚀 AI Casino ULTRA OPTIMIZED Backend (Go + Redis Enriched)")
 	log.Println("⚡ Arquitectura: Python Scraper → Redis Ultra Rico → Go ML → Frontend")
@@ -185,6 +215,7 @@ func (s *OptimizedHybridServer) SetupOptimizedRoutes() {
 		roulette.GET("/latest", s.handleOptimizedLatest)
 		roulette.GET("/gaps", s.handleCurrentGaps)
 		roulette.GET("/patterns", s.handlePatterns)
+		roulette.GET("/group-stats", s.handleGroupStatistics)  // NUEVO: Estadísticas de grupos
 	}
 
 	// Rutas AI/ML optimizadas
@@ -803,6 +834,232 @@ func (s *OptimizedHybridServer) handleCurrentGaps(c *gin.Context) {
 func (s *OptimizedHybridServer) handlePatterns(c *gin.Context) {
 	// Implementar patrones
 	c.JSON(http.StatusOK, gin.H{"message": "patterns endpoint"})
+}
+
+// handleGroupStatistics maneja estadísticas detalladas de grupos de números
+func (s *OptimizedHybridServer) handleGroupStatistics(c *gin.Context) {
+	ctx := context.Background()
+
+	log.Println("📊 Generando estadísticas de grupos de números...")
+
+	// Obtener números recientes de Redis
+	recentNumbersStr, err := s.RedisClient.LRange(ctx, "roulette:history", 0, 49).Result()
+	if err != nil {
+		log.Printf("❌ Error obteniendo historial: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo datos"})
+		return
+	}
+
+	// Convertir strings a números
+	var recentNumbers []int
+	for _, numStr := range recentNumbersStr {
+		if num, err := strconv.Atoi(numStr); err == nil {
+			recentNumbers = append(recentNumbers, num)
+		}
+	}
+
+	// Definir grupos de números
+	groupDefinitions := map[string][]int{
+		"rojo":             {1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36},
+		"negro":            {2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35},
+		"par":              {2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36},
+		"impar":            {1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35},
+		"bajo":             []int{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18},
+		"alto":             []int{19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36},
+		"primera_docena":   []int{1,2,3,4,5,6,7,8,9,10,11,12},
+		"segunda_docena":   []int{13,14,15,16,17,18,19,20,21,22,23,24},
+		"tercera_docena":   []int{25,26,27,28,29,30,31,32,33,34,35,36},
+		"voisins":          {22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25},
+		"tiers":            {27,13,36,11,30,8,23,10,5,24,16,33},
+		"orphelins":        {1,20,14,31,9,17,34,6},
+		"zero_game":        {12,35,3,26,0,32,15},
+	}
+
+	groupNames := map[string]string{
+		"rojo":             "Números Rojos",
+		"negro":            "Números Negros",
+		"par":              "Números Pares",
+		"impar":            "Números Impares",
+		"bajo":             "Manque (1-18)",
+		"alto":             "Passe (19-36)",
+		"primera_docena":   "Primera Docena (1-12)",
+		"segunda_docena":   "Segunda Docena (13-24)",
+		"tercera_docena":   "Tercera Docena (25-36)",
+		"voisins":          "Voisins du Zéro",
+		"tiers":            "Tiers du Cylindre",
+		"orphelins":        "Orphelins",
+		"zero_game":        "Zero Spiel",
+	}
+
+	groupDescriptions := map[string]string{
+		"voisins":    "Vecinos del cero",
+		"tiers":      "Tercio del cilindro",
+		"orphelins":  "Huérfanos",
+		"zero_game":  "Juego del cero",
+	}
+
+	// Calcular estadísticas para cada grupo
+	var traditionalGroups []GroupStatistics
+	var sectorGroups []GroupStatistics
+	var bestPerforming *GroupStatistics
+	var worstPerforming *GroupStatistics
+
+	currentTime := time.Now().Format("15:04:05")
+	totalSpins := len(recentNumbers)
+
+	for groupID, numbers := range groupDefinitions {
+		hits := 0
+		for _, num := range recentNumbers {
+			for _, groupNum := range numbers {
+				if num == groupNum {
+					hits++
+					break
+				}
+			}
+		}
+
+		winRate := 0.0
+		if totalSpins > 0 {
+			winRate = (float64(hits) / float64(totalSpins)) * 100
+		}
+
+		groupStat := GroupStatistics{
+			ID:          groupID,
+			Name:        groupNames[groupID],
+			Numbers:     numbers,
+			Description: groupDescriptions[groupID],
+			Hits:        hits,
+			Total:       totalSpins,
+			WinRate:     winRate,
+			LastUpdate:  currentTime,
+		}
+
+		// Clasificar grupos
+		if groupID == "voisins" || groupID == "tiers" || groupID == "orphelins" || groupID == "zero_game" {
+			groupStat.Type = "sector"
+			sectorGroups = append(sectorGroups, groupStat)
+		} else {
+			groupStat.Type = "traditional"
+			traditionalGroups = append(traditionalGroups, groupStat)
+		}
+
+		// Encontrar mejores y peores rendimientos
+		if bestPerforming == nil || winRate > bestPerforming.WinRate {
+			temp := groupStat
+			bestPerforming = &temp
+		}
+		if worstPerforming == nil || winRate < worstPerforming.WinRate {
+			temp := groupStat
+			worstPerforming = &temp
+		}
+	}
+
+	// Generar análisis de tendencias
+	trends := []TrendAnalysis{
+		{
+			Type:        "Tendencia Rojo/Negro",
+			Strength:    calculateColorTrend(recentNumbers),
+			Description: "Análisis de alternancia entre colores",
+		},
+		{
+			Type:        "Secuencia Par/Impar",
+			Strength:    calculateParityTrend(recentNumbers),
+			Description: "Análisis de patrones de paridad",
+		},
+		{
+			Type:        "Patrón Docenas",
+			Strength:    calculateDozenTrend(recentNumbers),
+			Description: "Análisis de distribución por docenas",
+		},
+	}
+
+	response := GroupStatisticsResponse{
+		TraditionalGroups: traditionalGroups,
+		SectorGroups:     sectorGroups,
+		BestPerforming:   bestPerforming,
+		WorstPerforming:  worstPerforming,
+		Trends:           trends,
+		LastUpdate:       currentTime,
+	}
+
+	log.Printf("✅ Estadísticas de grupos generadas: %d grupos tradicionales, %d sectores",
+		len(traditionalGroups), len(sectorGroups))
+
+	c.JSON(http.StatusOK, response)
+}
+
+// Helper functions para análisis de tendencias
+func calculateColorTrend(numbers []int) float64 {
+	if len(numbers) < 2 {
+		return 50.0
+	}
+
+	redNumbers := map[int]bool{1:true,3:true,5:true,7:true,9:true,12:true,14:true,16:true,18:true,19:true,21:true,23:true,25:true,27:true,30:true,32:true,34:true,36:true}
+
+	alternations := 0
+	for i := 1; i < len(numbers); i++ {
+		prevIsRed := redNumbers[numbers[i-1]]
+		currIsRed := redNumbers[numbers[i]]
+		if prevIsRed != currIsRed {
+			alternations++
+		}
+	}
+
+	return (float64(alternations) / float64(len(numbers)-1)) * 100
+}
+
+func calculateParityTrend(numbers []int) float64 {
+	if len(numbers) < 2 {
+		return 50.0
+	}
+
+	alternations := 0
+	for i := 1; i < len(numbers); i++ {
+		prevIsEven := numbers[i-1]%2 == 0
+		currIsEven := numbers[i]%2 == 0
+		if prevIsEven != currIsEven {
+			alternations++
+		}
+	}
+
+	return (float64(alternations) / float64(len(numbers)-1)) * 100
+}
+
+func calculateDozenTrend(numbers []int) float64 {
+	if len(numbers) < 3 {
+		return 50.0
+	}
+
+	dozenCounts := make(map[int]int)
+	for _, num := range numbers {
+		if num == 0 {
+			continue
+		}
+		dozen := ((num - 1) / 12) + 1
+		if dozen >= 1 && dozen <= 3 {
+			dozenCounts[dozen]++
+		}
+	}
+
+	// Calcular distribución uniforme esperada
+	total := len(numbers)
+	expectedPerDozen := float64(total) / 3.0
+
+	variance := 0.0
+	for dozen := 1; dozen <= 3; dozen++ {
+		diff := float64(dozenCounts[dozen]) - expectedPerDozen
+		variance += diff * diff
+	}
+
+	// Convertir varianza a porcentaje de uniformidad
+	maxVariance := expectedPerDozen * expectedPerDozen * 3
+	uniformity := (1.0 - (variance / maxVariance)) * 100
+
+	if uniformity < 0 {
+		uniformity = 0
+	}
+
+	return uniformity
 }
 
 func (s *OptimizedHybridServer) handleOptimizedPredict(c *gin.Context) {
